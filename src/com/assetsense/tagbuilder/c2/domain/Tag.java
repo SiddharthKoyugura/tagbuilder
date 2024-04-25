@@ -1,12 +1,25 @@
 package com.assetsense.tagbuilder.c2.domain;
 
-public class Tag {
+import java.io.Serializable;
+
+public class Tag implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private long id;
 	private String name;
-	private String description;
-	private String dataType;
-	private String engineeringUnits;
+	private Asset asset;
 
 	public Tag() {
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 
 	public String getName() {
@@ -17,34 +30,12 @@ public class Tag {
 		this.name = name;
 	}
 
-	public String getDescription() {
-		return description;
+	public Asset getAsset() {
+		return asset;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
-
-	public String getDataType() {
-		return dataType;
-	}
-
-	public void setDataType(String dataType) {
-		this.dataType = dataType;
-	}
-
-	public String getEngineeringUnits() {
-		return engineeringUnits;
-	}
-
-	public void setEngineeringUnits(String engineeringUnits) {
-		this.engineeringUnits = engineeringUnits;
-	}
-
-	@Override
-	public String toString() {
-		return "Tag [name=" + name + ", description=" + description + ", dataType=" + dataType + ", engineeringUnits="
-				+ engineeringUnits + "]";
+	public void setAsset(Asset asset) {
+		this.asset = asset;
 	}
 
 }

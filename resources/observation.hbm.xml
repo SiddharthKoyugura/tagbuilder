@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC  
+"-//Hibernate/Hibernate Mapping DTD 3.0//EN"  
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class name="com.assetsense.tagbuilder.c2.domain.Observation" table="OBSERVATION">
+		<id name="id" column="id">
+			<generator class="native"/>
+		</id>
+
+		<property name="code" column="code" not-null="false" unique="true"></property>
+		<property name="formType" column="formType" not-null="false"></property>
+		<property name="functionalCat" column="functional_category" not-null="false"></property>
+		<property name="description" column="description" not-null="false"></property>
+		
+		<many-to-one name="tag" column="tag" not-null="false" />
+		
+	</class>
+</hibernate-mapping>

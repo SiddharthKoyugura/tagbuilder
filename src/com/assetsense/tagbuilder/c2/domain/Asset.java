@@ -1,13 +1,28 @@
 package com.assetsense.tagbuilder.c2.domain;
 
-import java.util.List;
+import java.io.Serializable;
 
-public class Asset {
+public class Asset implements Serializable {
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
+	private long id;
 	private String name;
-	private String description;
-	private List<Tag> tags;
+	private String ecn;
+	private String model;
+	private String location;
+	private Asset parentAsset;
 
 	public Asset() {
+	}
+
+	public long getId() {
+		return id;
+	}
+
+	public void setId(long id) {
+		this.id = id;
 	}
 
 	public String getName() {
@@ -18,25 +33,36 @@ public class Asset {
 		this.name = name;
 	}
 
-	public String getDescription() {
-		return description;
+	public String getEcn() {
+		return ecn;
 	}
 
-	public void setDescription(String description) {
-		this.description = description;
+	public void setEcn(String ecn) {
+		this.ecn = ecn;
 	}
 
-	public List<Tag> getTags() {
-		return tags;
+	public String getModel() {
+		return model;
 	}
 
-	public void setTags(List<Tag> tags) {
-		this.tags = tags;
+	public void setModel(String model) {
+		this.model = model;
 	}
 
-	@Override
-	public String toString() {
-		return "Asset [name=" + name + ", description=" + description + ", tags=" + tags + "]";
+	public String getLocation() {
+		return location;
+	}
+
+	public void setLocation(String location) {
+		this.location = location;
+	}
+
+	public Asset getParentAsset() {
+		return parentAsset;
+	}
+
+	public void setParentAsset(Asset parentAsset) {
+		this.parentAsset = parentAsset;
 	}
 
 }

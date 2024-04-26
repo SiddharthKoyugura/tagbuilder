@@ -84,9 +84,9 @@ body {
 
 
 .selectedRow {
-	background-color: #999999;
-	font-weight: bold;
-	color: white;
+	background-color: #999999 !important;
+	font-weight: bold !important;
+	color: white !important;
 }
 
 .tableStyle td {
@@ -94,8 +94,6 @@ body {
 	border-right-style: solid;
 	border-bottom-style: solid;
 	border-width: 1px;
-	
-	
 }
 
 

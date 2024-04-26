@@ -1,20 +1,32 @@
 package com.assetsense.tagbuilder.ui;
 
-import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.DockLayoutPanel;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.HTMLTable.Cell;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class TagBuilderPage {
+
+	private FlexTable assetTable;
+	private FlexTable obsTable;
+	private FlexTable tagTable;
+
+	private FlexTable selectedTable = null;
+	private int selectedRow;
+	private FlexTable editableTable = null;
+	private int editableRow;
 
 	public void loadTagBuilderPage() {
 		RootLayoutPanel.get().clear();
@@ -123,13 +135,12 @@ public class TagBuilderPage {
 		vpanel.setHeight("100%");
 		vpanel.getElement().getStyle().setBackgroundColor("#EEEEEE");
 		vpanel.getElement().getStyle().setMarginLeft(15, Unit.PX);
-		
+
 		ScrollPanel spanel = new ScrollPanel();
 		spanel.setSize("100vw", "100vh");
 
-
 		spanel.add(buildTables());
-		
+
 		vpanel.add(buildDetailsNavbar());
 		vpanel.add(spanel);
 
@@ -145,6 +156,23 @@ public class TagBuilderPage {
 
 		Button editBtn = new Button("Edit");
 		Button saveBtn = new Button("Save");
+
+		editBtn.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				convertRowToEditable();
+			}
+
+		});
+
+		saveBtn.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				revertFieldsToNormalState();
+			}
+
+		});
 
 		saveBtn.getElement().getStyle().setMarginLeft(20, Unit.PX);
 
@@ -180,7 +208,7 @@ public class TagBuilderPage {
 		mainPanel.getElement().getStyle().setBackgroundColor("#D9D9D9");
 		mainPanel.getElement().getStyle().setProperty("border", "1px solid black");
 
-		FlexTable assetTable = new FlexTable();
+		assetTable = new FlexTable();
 		assetTable.setWidth("100%");
 
 		assetTable.getElement().getStyle().setProperty("borderCollapse", "collapse");
@@ -205,10 +233,11 @@ public class TagBuilderPage {
 		assetTable.setText(2, 2, "TAL116");
 		assetTable.setText(2, 3, "Houston Plant");
 
-		assetTable.getRowFormatter().setStyleName(2, "selectedRow");
 		assetTable.getRowFormatter().getElement(2).getStyle().setProperty("cursor", "pointer");
 
 		mainPanel.add(assetTable);
+
+		setClickHandler(assetTable);
 
 		return mainPanel;
 	}
@@ -221,7 +250,7 @@ public class TagBuilderPage {
 		mainPanel.getElement().getStyle().setProperty("border", "1px solid black");
 		mainPanel.getElement().getStyle().setMarginLeft(10, Unit.PX);
 
-		FlexTable obsTable = new FlexTable();
+		obsTable = new FlexTable();
 		obsTable.setWidth("100%");
 		obsTable.getElement().getStyle().setProperty("borderCollapse", "collapse");
 		obsTable.setStyleName("table-padding tableStyle");
@@ -245,7 +274,6 @@ public class TagBuilderPage {
 		obsTable.setText(2, 2, "1");
 		obsTable.setText(2, 3, "40HP Motor Temperature");
 
-		obsTable.getRowFormatter().setStyleName(2, "selectedRow");
 		obsTable.getRowFormatter().getElement(2).getStyle().setProperty("cursor", "pointer");
 
 		obsTable.setText(3, 0, "40HP Motor Form");
@@ -255,6 +283,8 @@ public class TagBuilderPage {
 		obsTable.getRowFormatter().getElement(3).getStyle().setProperty("cursor", "pointer");
 
 		mainPanel.add(obsTable);
+
+		setClickHandler(obsTable);
 
 		return mainPanel;
 	}
@@ -267,11 +297,11 @@ public class TagBuilderPage {
 		mainPanel.getElement().getStyle().setProperty("border", "1px solid black");
 		mainPanel.getElement().getStyle().setMarginTop(10, Unit.PX);
 
-		FlexTable tagTable = new FlexTable();
+		tagTable = new FlexTable();
 		tagTable.setWidth("100%");
 		tagTable.getElement().getStyle().setProperty("borderCollapse", "collapse");
 		tagTable.setStyleName("table-padding tableStyle");
-		
+
 		tagTable.setText(0, 0, "Tag Setup");
 
 		tagTable.getFlexCellFormatter().setColSpan(0, 0, 4);
@@ -289,7 +319,6 @@ public class TagBuilderPage {
 		tagTable.setText(2, 1, "1");
 		tagTable.setText(2, 2, "AS-40HPMTR723-1");
 
-		tagTable.getRowFormatter().setStyleName(2, "selectedRow");
 		tagTable.getRowFormatter().getElement(2).getStyle().setProperty("cursor", "pointer");
 
 		tagTable.setText(3, 0, "40HPMTR723");
@@ -299,6 +328,138 @@ public class TagBuilderPage {
 
 		mainPanel.add(tagTable);
 
+		setClickHandler(tagTable);
+
 		return mainPanel;
+	}
+
+	private void setClickHandler(final FlexTable table) {
+		table.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				Cell cell = table.getCellForEvent(event);
+				if (cell != null) {
+					final int row = cell.getRowIndex();
+					if (row > 1) {
+						if (editableTable != null) {
+							if (editableTable == table) {
+								if (editableRow != row) {
+									revertFieldsToNormalState();
+									handleSelection(table, row);
+								}
+							} else if (editableTable != table) {
+								revertFieldsToNormalState();
+								handleSelection(table, row);
+							}
+						} else if (selectedTable == table && selectedRow == row) {
+							convertRowToEditable();
+						}
+
+						else {
+							handleSelection(table, row);
+						}
+					}
+				}
+			}
+		});
+	}
+
+	private void handleSelection(FlexTable table, int row) {
+		if (selectedTable != null) {
+			selectedTable.getRowFormatter().removeStyleName(selectedRow, "selectedRow");
+			selectedTable = null;
+		}
+		table.getRowFormatter().addStyleName(row, "selectedRow");
+		selectedTable = table;
+		selectedRow = row;
+	}
+
+	private void convertRowToEditable() {
+		if (selectedTable != null) {
+			int row = selectedRow;
+			FlexTable table = selectedTable;
+
+			if (table == assetTable) {
+				TextBox ecnField = new TextBox();
+				ecnField.setText(table.getText(row, 0));
+
+				TextBox assetField = new TextBox();
+				assetField.setText(table.getText(row, 1));
+
+				TextBox locationField = new TextBox();
+				locationField.setText(table.getText(row, 3));
+
+				table.setWidget(row, 0, ecnField);
+				table.setWidget(row, 1, assetField);
+				table.setWidget(row, 3, locationField);
+			} else if (table == obsTable) {
+				TextBox formTypeField = new TextBox();
+				formTypeField.setText(table.getText(row, 0));
+
+				TextBox funcCatField = new TextBox();
+				funcCatField.setText(table.getText(row, 1));
+
+				TextBox codeField = new TextBox();
+				codeField.setText(table.getText(row, 2));
+
+				TextBox descriptionField = new TextBox();
+				descriptionField.setText(table.getText(row, 3));
+
+				table.setWidget(row, 0, formTypeField);
+				table.setWidget(row, 1, funcCatField);
+				table.setWidget(row, 2, codeField);
+				table.setWidget(row, 3, descriptionField);
+			} else if (table == tagTable) {
+				TextBox assetField = new TextBox();
+				assetField.setText(table.getText(row, 0));
+
+				TextBox codeField = new TextBox();
+				codeField.setText(table.getText(row, 1));
+
+				TextBox tagField = new TextBox();
+				tagField.setText(table.getText(row, 2));
+
+				table.setWidget(row, 0, assetField);
+				table.setWidget(row, 1, codeField);
+				table.setWidget(row, 2, tagField);
+			}
+
+			editableTable = table;
+			editableRow = row;
+		}
+	}
+
+	private void revertFieldsToNormalState() {
+		int row = editableRow;
+		FlexTable table = editableTable;
+		if (table == assetTable) {
+			String ecn = ((TextBox) table.getWidget(row, 0)).getText();
+			String asset = ((TextBox) table.getWidget(row, 1)).getText();
+			String location = ((TextBox) table.getWidget(row, 3)).getText();
+
+			table.setText(row, 0, ecn);
+			table.setText(row, 1, asset);
+			table.setText(row, 3, location);
+		} else if (table == obsTable) {
+			String formType = ((TextBox) table.getWidget(row, 0)).getText();
+			String funcCat = ((TextBox) table.getWidget(row, 1)).getText();
+			String code = ((TextBox) table.getWidget(row, 2)).getText();
+			String description = ((TextBox) table.getWidget(row, 3)).getText();
+
+			table.setText(row, 0, formType);
+			table.setText(row, 1, funcCat);
+			table.setText(row, 2, code);
+			table.setText(row, 3, description);
+		} else if (table == tagTable) {
+			String asset = ((TextBox) table.getWidget(row, 0)).getText();
+			String code = ((TextBox) table.getWidget(row, 1)).getText();
+			String tag = ((TextBox) table.getWidget(row, 2)).getText();
+
+			table.setText(row, 0, asset);
+			table.setText(row, 1, code);
+			table.setText(row, 2, tag);
+		}
+
+		editableTable = null;
 	}
 }

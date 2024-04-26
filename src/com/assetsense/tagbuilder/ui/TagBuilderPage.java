@@ -12,6 +12,7 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
+import com.google.gwt.user.client.ui.SplitLayoutPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
@@ -32,19 +33,19 @@ public class TagBuilderPage {
 		RootLayoutPanel.get().clear();
 		RootLayoutPanel.get().add(buildTaskPage());
 	}
-
-	private DockLayoutPanel buildTaskPage() {
-		DockLayoutPanel dpanel = new DockLayoutPanel(Unit.PX);
-		dpanel.setSize("100%", "100%");
-
-		dpanel.addNorth(buildNavbar(), 48);
-		dpanel.addWest(buildLeftSidebar(), 200);
-
-		dpanel.add(buildDetailsDashboard());
-
-		return dpanel;
+	
+	private SplitLayoutPanel buildTaskPage() {
+		SplitLayoutPanel spanel = new SplitLayoutPanel();
+		spanel.setSize("100%", "100%");
+		
+		spanel.addNorth(buildNavbar(), 48);
+		spanel.addWest(buildLeftSidebar(), 200);
+		
+		spanel.add(buildDetailsDashboard());
+		
+		return spanel;
 	}
-
+	
 	private HorizontalPanel buildNavbar() {
 		HorizontalPanel navbar = new HorizontalPanel();
 		navbar.setWidth("100%");
@@ -134,7 +135,6 @@ public class TagBuilderPage {
 		vpanel.setWidth("100%");
 		vpanel.setHeight("100%");
 		vpanel.getElement().getStyle().setBackgroundColor("#EEEEEE");
-		vpanel.getElement().getStyle().setMarginLeft(15, Unit.PX);
 
 		ScrollPanel spanel = new ScrollPanel();
 		spanel.setSize("100vw", "100vh");
@@ -190,7 +190,7 @@ public class TagBuilderPage {
 		mainPanel.getElement().getStyle().setPadding(10, Unit.PX);
 
 		HorizontalPanel hpanel = new HorizontalPanel();
-		hpanel.setWidth("100%");
+		hpanel.setWidth("98%");
 
 		hpanel.add(buildAssetTable());
 		hpanel.add(buildObservationTable());
@@ -257,29 +257,26 @@ public class TagBuilderPage {
 
 		obsTable.setText(0, 0, "Observations");
 
-		obsTable.getFlexCellFormatter().setColSpan(0, 0, 4);
+		obsTable.getFlexCellFormatter().setColSpan(0, 0, 3);
 		obsTable.getRowFormatter().setStyleName(0, "bg-blue");
 		obsTable.getRowFormatter().getElement(0).getStyle().setProperty("borderBottom", "1px solid black");
 
-		obsTable.setText(1, 0, "Form Type");
-		obsTable.setText(1, 1, "Functional Category");
-		obsTable.setText(1, 2, "Code");
-		obsTable.setText(1, 3, "Description");
+		obsTable.setText(1, 0, "Functional Category");
+		obsTable.setText(1, 1, "Code");
+		obsTable.setText(1, 2, "Description");
 
 		obsTable.getRowFormatter().setStyleName(1, "bg-blue");
 		obsTable.getRowFormatter().getElement(1).getStyle().setProperty("cursor", "pointer");
 
-		obsTable.setText(2, 0, "40HP Motor Form");
-		obsTable.setText(2, 1, "Mechanical");
-		obsTable.setText(2, 2, "1");
-		obsTable.setText(2, 3, "40HP Motor Temperature");
+		obsTable.setText(2, 0, "Mechanical");
+		obsTable.setText(2, 1, "1");
+		obsTable.setText(2, 2, "40HP Motor Temperature");
 
 		obsTable.getRowFormatter().getElement(2).getStyle().setProperty("cursor", "pointer");
 
-		obsTable.setText(3, 0, "40HP Motor Form");
-		obsTable.setText(3, 1, "Mechanical");
-		obsTable.setText(3, 2, "1");
-		obsTable.setText(3, 3, "40HP Motor Temperature");
+		obsTable.setText(3, 0, "Mechanical");
+		obsTable.setText(3, 1, "1");
+		obsTable.setText(3, 2, "40HP Motor Temperature");
 		obsTable.getRowFormatter().getElement(3).getStyle().setProperty("cursor", "pointer");
 
 		mainPanel.add(obsTable);
@@ -393,22 +390,19 @@ public class TagBuilderPage {
 				table.setWidget(row, 1, assetField);
 				table.setWidget(row, 3, locationField);
 			} else if (table == obsTable) {
-				TextBox formTypeField = new TextBox();
-				formTypeField.setText(table.getText(row, 0));
 
 				TextBox funcCatField = new TextBox();
-				funcCatField.setText(table.getText(row, 1));
+				funcCatField.setText(table.getText(row, 0));
 
 				TextBox codeField = new TextBox();
-				codeField.setText(table.getText(row, 2));
+				codeField.setText(table.getText(row, 1));
 
 				TextBox descriptionField = new TextBox();
-				descriptionField.setText(table.getText(row, 3));
+				descriptionField.setText(table.getText(row, 2));
 
-				table.setWidget(row, 0, formTypeField);
-				table.setWidget(row, 1, funcCatField);
-				table.setWidget(row, 2, codeField);
-				table.setWidget(row, 3, descriptionField);
+				table.setWidget(row, 0, funcCatField);
+				table.setWidget(row, 1, codeField);
+				table.setWidget(row, 2, descriptionField);
 			} else if (table == tagTable) {
 				TextBox assetField = new TextBox();
 				assetField.setText(table.getText(row, 0));
@@ -441,15 +435,13 @@ public class TagBuilderPage {
 			table.setText(row, 1, asset);
 			table.setText(row, 3, location);
 		} else if (table == obsTable) {
-			String formType = ((TextBox) table.getWidget(row, 0)).getText();
-			String funcCat = ((TextBox) table.getWidget(row, 1)).getText();
-			String code = ((TextBox) table.getWidget(row, 2)).getText();
-			String description = ((TextBox) table.getWidget(row, 3)).getText();
+			String funcCat = ((TextBox) table.getWidget(row, 0)).getText();
+			String code = ((TextBox) table.getWidget(row, 1)).getText();
+			String description = ((TextBox) table.getWidget(row, 2)).getText();
 
-			table.setText(row, 0, formType);
-			table.setText(row, 1, funcCat);
-			table.setText(row, 2, code);
-			table.setText(row, 3, description);
+			table.setText(row, 0, funcCat);
+			table.setText(row, 1, code);
+			table.setText(row, 2, description);
 		} else if (table == tagTable) {
 			String asset = ((TextBox) table.getWidget(row, 0)).getText();
 			String code = ((TextBox) table.getWidget(row, 1)).getText();

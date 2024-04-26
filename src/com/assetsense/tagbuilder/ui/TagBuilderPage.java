@@ -35,15 +35,17 @@ public class TagBuilderPage {
 	}
 	
 	private SplitLayoutPanel buildTaskPage() {
-		SplitLayoutPanel spanel = new SplitLayoutPanel();
-		spanel.setSize("100%", "100%");
+		SplitLayoutPanel splitLayoutPanel = new SplitLayoutPanel();
+		splitLayoutPanel.setSize("100%", "100%");
 		
-		spanel.addNorth(buildNavbar(), 48);
-		spanel.addWest(buildLeftSidebar(), 200);
+		splitLayoutPanel.addStyleName("mySplitLayoutPanel");
 		
-		spanel.add(buildDetailsDashboard());
+		splitLayoutPanel.addNorth(buildNavbar(), 48);
+		splitLayoutPanel.addWest(buildLeftSidebar(), 200);
 		
-		return spanel;
+		splitLayoutPanel.add(buildDetailsDashboard());
+		
+		return splitLayoutPanel;
 	}
 	
 	private HorizontalPanel buildNavbar() {
@@ -83,14 +85,12 @@ public class TagBuilderPage {
 		searchPanel.setWidth("100%");
 		searchPanel.setStyleName("searchPanel");
 
-		Button btn = new Button("S");
+		TextBox searchField = new TextBox();
+	
+		
+		searchField.getElement().setPropertyString("placeholder", "Search an Asset");	
 
-		CheckBox cb = new CheckBox();
-		Label label = new Label("Show Asset Hierarchy");
-
-		searchPanel.add(btn);
-		searchPanel.add(cb);
-		searchPanel.add(label);
+		searchPanel.add(searchField);
 
 		return searchPanel;
 	}
@@ -130,7 +130,10 @@ public class TagBuilderPage {
 
 	// End: LeftSidebar
 
-	private VerticalPanel buildDetailsDashboard() {
+	private ScrollPanel buildDetailsDashboard() {
+		ScrollPanel mainPanel = new ScrollPanel();
+		mainPanel.setSize("100%", "100%");
+		
 		VerticalPanel vpanel = new VerticalPanel();
 		vpanel.setWidth("100%");
 		vpanel.setHeight("100%");
@@ -143,8 +146,10 @@ public class TagBuilderPage {
 
 		vpanel.add(buildDetailsNavbar());
 		vpanel.add(spanel);
+		
+		mainPanel.add(vpanel);
 
-		return vpanel;
+		return mainPanel;
 	}
 
 	private HorizontalPanel buildDetailsNavbar() {

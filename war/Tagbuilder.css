@@ -96,5 +96,10 @@ body {
 	border-width: 1px;
 }
 
+.mySplitLayoutPanel .gwt-SplitLayoutPanel-HDragger {
+    background-color: rgba(0, 0, 0, 0.3); /* Set the color of the horizontal splitter */
+    cursor: row-resize; /* Change cursor style to indicate draggability */
+}
+
 
 

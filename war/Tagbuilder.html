@@ -1,37 +1,52 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-    <link type="text/css" rel="stylesheet" href="Tagbuilder.css">
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <link type="text/css" rel="stylesheet" href="Tagbuilder.css" />
     <title>Web Application Starter Project</title>
-    <script type="text/javascript" language="javascript" src="tagbuilder/tagbuilder.nocache.js"></script>
+    <script
+      type="text/javascript"
+      language="javascript"
+      src="tagbuilder/tagbuilder.nocache.js"
+    ></script>
   </head>
-  <body>
-  </body>
+  <body></body>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ws/8.5.0/ws.min.js"></script>
   <script>
     const ws = new WebSocket("ws://192.168.0.108:8000");
 
-    var data = null;
+    var elementsData = null;
+    var childData = {};
 
-    ws.onopen = function() {
-      ws.send("");
+    ws.onopen = function () {
+      ws.send(JSON.stringify({ request: "elementsHierarchy", id: "" }));
     };
-  
-    ws.onmessage = function(event) {
-      if(event.data){
-        data = event.data;
+
+    ws.onmessage = function (event) {
+      if (event.data) {
+        elementsData = event.data;
+        console.log(elementsData);
       }
     };
-    
-    ws.onclose = function() {
+
+    ws.onclose = function () {
       // window.alert("Socket closed");
+      console.log("Socket closed");
     };
 
-    function getAssetData(){
-      return data;
+    function getAssetData() {
+      return elementsData;
     }
 
+    function sendMessageToServer(message) {
+      elementsData = null;
+      console.log(message);
+      ws.send(message);
+    }
+
+    function getResponseData() {
+      return elementsData;
+    }
   </script>
 </html>

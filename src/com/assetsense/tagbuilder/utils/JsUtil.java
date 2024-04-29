@@ -67,4 +67,5 @@ public class JsUtil {
 	public native void sendMessageToServer(String message) /*-{
 		return $wnd.sendMessageToServer(message);
 	}-*/;
+	
 }

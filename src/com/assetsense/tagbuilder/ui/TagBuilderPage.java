@@ -18,10 +18,15 @@ import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.DropHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTMLTable.Cell;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SplitLayoutPanel;
@@ -41,7 +46,6 @@ public class TagBuilderPage {
 	private int selectedRow;
 	private FlexTable editableTable = null;
 	private int editableRow;
-
 
 	public void loadTagBuilderPage() {
 		RootLayoutPanel.get().clear();
@@ -100,7 +104,8 @@ public class TagBuilderPage {
 		searchPanel.setStyleName("searchPanel");
 
 		TextBox searchField = new TextBox();
-
+		
+		searchField.getElement().getStyle().setBackgroundColor("white");
 		searchField.getElement().setPropertyString("placeholder", "Search an Asset");
 
 		searchPanel.add(searchField);
@@ -154,7 +159,7 @@ public class TagBuilderPage {
 
 				@Override
 				public void onDragStart(DragStartEvent event) {
-					 event.setData("elementId", element.getId());
+					event.setData("elementId", element.getId());
 				}
 
 			});
@@ -202,8 +207,10 @@ public class TagBuilderPage {
 
 				assetTable.setText(2, 0, "NULL");
 				assetTable.setText(2, 1, jsUtil.getValueAsString(elementObject, "Name"));
-				assetTable.setText(2, 2, "NULL");
+				assetTable.setWidget(2, 2, getModelField());
 				assetTable.setText(2, 3, "NULL");
+
+				setCursorPointer(assetTable, 2);
 
 				int row = 2;
 				JavaScriptObject attributeArray = jsUtil.getObjectProperty(elementObject, "Attributes");
@@ -214,11 +221,14 @@ public class TagBuilderPage {
 						obsTable.setText(row, 0, "NULL");
 						obsTable.setText(row, 1, "NULL");
 						obsTable.setText(row, 2, description.trim().length() > 0 ? description.trim() : "NULL");
-						row++;
+						setCursorPointer(obsTable, row);
 
 						tagTable.setText(row, 0, "NULL");
 						tagTable.setText(row, 1, "NULL");
 						tagTable.setText(row, 2, "NULL");
+						setCursorPointer(tagTable, row);
+
+						row++;
 					}
 				}
 
@@ -226,6 +236,166 @@ public class TagBuilderPage {
 		};
 		timer.schedule(1500);
 	}
+
+	private void setCursorPointer(FlexTable table, int row) {
+		table.getRowFormatter().getElement(row).getStyle().setProperty("cursor", "pointer");
+	}
+
+	private HorizontalPanel getModelField() {
+		HorizontalPanel horizontalPanel = new HorizontalPanel();
+		horizontalPanel.setWidth("100%");
+		horizontalPanel.setStyleName("removeBorder");
+
+		ListBox listBox = new ListBox();
+		listBox.setWidth("100%");
+
+		final Button addButton = new Button("+");
+		addButton.getElement().getStyle().setProperty("cursor", "pointer");
+
+		addButton.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				// showDialogBox();
+				final DialogBox dialogBox = new DialogBox();
+				dialogBox.setSize("100%", "100%");
+				dialogBox.setAnimationEnabled(true);
+
+				dialogBox.addStyleName("dialogBoxStyle");
+
+				VerticalPanel vpanel = new VerticalPanel();
+				vpanel.setWidth("100%");
+
+				HorizontalPanel h1panel = new HorizontalPanel();
+				h1panel.setWidth("100%");
+				h1panel.setHeight("40px");
+				h1panel.getElement().getStyle().setBackgroundColor("#5C9ED4");
+				h1panel.getElement().getStyle().setPadding(5, Unit.PX);
+
+				Button closeBtn = new Button("X");
+
+				closeBtn.addClickHandler(new ClickHandler() {
+
+					@Override
+					public void onClick(ClickEvent event) {
+						dialogBox.hide();
+					}
+
+				});
+
+				h1panel.add(closeBtn);
+
+				h1panel.setCellHorizontalAlignment(closeBtn, HasHorizontalAlignment.ALIGN_RIGHT);
+
+				final Grid grid = new Grid(5, 3);
+				grid.setCellPadding(10);
+				grid.getElement().getStyle().setProperty("padding", "20px");
+				grid.getElement().getStyle().setProperty("borderCollapse", "collapse");
+				grid.setWidth("100%");
+
+				TextBox nameField = new TextBox();
+				nameField.setStyleName("inputFieldStyle");
+
+				TextBox modelField = new TextBox();
+				modelField.setStyleName("inputFieldStyle");
+
+				ListBox assetTypeField = new ListBox();
+				assetTypeField.setStyleName("inputFieldStyle");
+
+				grid.setText(0, 0, "Model Name:");
+				grid.setWidget(0, 1, nameField);
+
+				grid.setText(1, 0, "Model #:");
+				grid.setWidget(1, 1, modelField);
+
+				grid.setText(2, 0, "Asset Type:");
+				grid.setWidget(2, 1, assetTypeField);
+
+				toggleSupplierField(grid, true);
+
+				Button saveBtn = new Button("Save");
+				grid.setWidget(4, 1, saveBtn);
+
+				grid.getCellFormatter().getElement(4, 1).getStyle().setProperty("textAlign", "right");
+
+				vpanel.add(h1panel);
+				vpanel.add(grid);
+
+				dialogBox.add(vpanel);
+
+				dialogBox.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
+					@Override
+					public void setPosition(int offsetWidth, int offsetHeight) {
+						int left = addButton.getAbsoluteLeft();
+						int top = addButton.getAbsoluteTop() + addButton.getOffsetHeight();
+						dialogBox.setPopupPosition(left - 50, top);
+					}
+				});
+			}
+
+		});
+
+		HorizontalPanel buttonPanel = new HorizontalPanel();
+		buttonPanel.setStyleName("removeBorder");
+		buttonPanel.getElement().getStyle().setMarginLeft(2, Unit.PX);
+		buttonPanel.setWidth("auto");
+
+		buttonPanel.add(addButton);
+		buttonPanel.setCellHorizontalAlignment(addButton, HasHorizontalAlignment.ALIGN_RIGHT);
+
+		horizontalPanel.add(listBox);
+		horizontalPanel.add(buttonPanel);
+
+		horizontalPanel.setCellWidth(listBox, "100%");
+
+		return horizontalPanel;
+	}
+
+	private void toggleSupplierField(final Grid grid, Boolean isBegin) {
+		if (isBegin) {
+			ListBox supplierField = new ListBox();
+			supplierField.setStyleName("inputFieldStyle");
+
+			Button addSupplierBtn = new Button("+");
+
+			addSupplierBtn.addClickHandler(new ClickHandler() {
+
+				@Override
+				public void onClick(ClickEvent event) {
+					toggleSupplierField(grid, false);
+				}
+
+			});
+			addSupplierBtn.getElement().getStyle().setMarginLeft(5, Unit.PX);
+
+			grid.setText(3, 0, "Supplier Master:");
+			grid.setWidget(3, 1, supplierField);
+			grid.setWidget(3, 2, addSupplierBtn);
+		}else {
+			TextBox supplierNameField = new TextBox();
+			supplierNameField.setStyleName("inputFieldStyle");
+
+			Button backBtn = new Button("X");
+			backBtn.addClickHandler(new ClickHandler(){
+
+				@Override
+				public void onClick(ClickEvent event) {
+					toggleSupplierField(grid, true);
+				}
+				
+			});
+			
+			backBtn.getElement().getStyle().setMarginLeft(5, Unit.PX);
+			
+			grid.setText(3, 0, "Supplier Name:");
+			grid.setWidget(3, 1, supplierNameField);
+			grid.setWidget(3, 2, backBtn);
+		}
+	}
+
+//	private void showDialogBox() {
+//
+//	}
 
 	// End: LeftSidebar
 
@@ -300,24 +470,24 @@ public class TagBuilderPage {
 
 		mainPanel.add(hpanel);
 		mainPanel.add(buildTagTable());
-		
-		mainPanel.addDomHandler(new DragOverHandler(){
+
+		mainPanel.addDomHandler(new DragOverHandler() {
 
 			@Override
 			public void onDragOver(DragOverEvent event) {
 				event.preventDefault();
 			}
-			
+
 		}, DragOverEvent.getType());
-		
-		mainPanel.addDomHandler(new DropHandler(){
+
+		mainPanel.addDomHandler(new DropHandler() {
 
 			@Override
 			public void onDrop(DropEvent event) {
 				String elementId = event.getData("elementId");
 				updateTables(elementId);
 			}
-			
+
 		}, DropEvent.getType());
 
 		return mainPanel;
@@ -350,13 +520,12 @@ public class TagBuilderPage {
 		assetTable.getRowFormatter().setStyleName(1, "bg-blue");
 		assetTable.getRowFormatter().getElement(1).getStyle().setProperty("cursor", "pointer");
 
-		// assetTable.setText(2, 0, "10171");
-		// assetTable.setText(2, 1, "10171");
-		// assetTable.setText(2, 2, "TAL116");
-		// assetTable.setText(2, 3, "Houston Plant");
-		//
-		// assetTable.getRowFormatter().getElement(2).getStyle().setProperty("cursor",
-		// "pointer");
+		assetTable.setText(2, 0, "NULL");
+		assetTable.setText(2, 1, "Hey");
+		assetTable.setWidget(2, 2, getModelField());
+		assetTable.setText(2, 3, "NULL");
+
+		assetTable.getRowFormatter().getElement(2).getStyle().setProperty("cursor", "pointer");
 
 		mainPanel.add(assetTable);
 
@@ -463,24 +632,29 @@ public class TagBuilderPage {
 			public void onClick(ClickEvent event) {
 				Cell cell = table.getCellForEvent(event);
 				if (cell != null) {
-					final int row = cell.getRowIndex();
-					if (row > 1) {
-						if (editableTable != null) {
-							if (editableTable == table) {
-								if (editableRow != row) {
+					int col = cell.getCellIndex();
+					if (table == assetTable && col == 2) {
+
+					} else {
+						final int row = cell.getRowIndex();
+						if (row > 1) {
+							if (editableTable != null) {
+								if (editableTable == table) {
+									if (editableRow != row) {
+										revertFieldsToNormalState();
+										handleSelection(table, row);
+									}
+								} else if (editableTable != table) {
 									revertFieldsToNormalState();
 									handleSelection(table, row);
 								}
-							} else if (editableTable != table) {
-								revertFieldsToNormalState();
+							} else if (selectedTable == table && selectedRow == row) {
+								convertRowToEditable();
+							}
+
+							else {
 								handleSelection(table, row);
 							}
-						} else if (selectedTable == table && selectedRow == row) {
-							convertRowToEditable();
-						}
-
-						else {
-							handleSelection(table, row);
 						}
 					}
 				}

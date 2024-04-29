@@ -12,12 +12,11 @@ public class Tagbuilder implements EntryPoint {
 
 	public void onModuleLoad() {
 		Timer timer = new Timer() {
-            @Override
-            public void run() {
-            	tagBuilderPage.loadTagBuilderPage();
-            }
-        };
-        timer.schedule(1000);
+			@Override
+			public void run() {
+				tagBuilderPage.loadTagBuilderPage();
+			}
+		};
+		timer.schedule(1000);
 	}
-
 }

@@ -7,10 +7,15 @@ import com.assetsense.tagbuilder.pi.domain.Element;
 import com.assetsense.tagbuilder.utils.JsUtil;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
-import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.event.dom.client.DragOverEvent;
+import com.google.gwt.event.dom.client.DragOverHandler;
+import com.google.gwt.event.dom.client.DragStartEvent;
+import com.google.gwt.event.dom.client.DragStartHandler;
+import com.google.gwt.event.dom.client.DropEvent;
+import com.google.gwt.event.dom.client.DropHandler;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -37,7 +42,6 @@ public class TagBuilderPage {
 	private FlexTable editableTable = null;
 	private int editableRow;
 
-	private Element selectedElement;
 
 	public void loadTagBuilderPage() {
 		RootLayoutPanel.get().clear();
@@ -109,30 +113,30 @@ public class TagBuilderPage {
 		tree.getElement().getStyle().setMarginTop(10, Unit.PX);
 
 		// Parent Assets
-//		TreeItem asset1 = new TreeItem(new Label("Asset1(ECN)"));
-//		TreeItem asset2 = new TreeItem(new Label("Asset2(ECN)"));
-//		TreeItem asset3 = new TreeItem(new Label("Asset3(ECN)"));
-//		TreeItem asset4 = new TreeItem(new Label("Asset4(ECN)"));
-//		TreeItem asset5 = new TreeItem(new Label("Asset5(ECN)"));
-//
-//		// Child Assets
-//		TreeItem casset1 = new TreeItem(new Label("Child Asset1(ECN)"));
-//		TreeItem casset2 = new TreeItem(new Label("Child Asset2(ECN)"));
-//		TreeItem casset3 = new TreeItem(new Label("Child Asset3(ECN)"));
-//		TreeItem casset4 = new TreeItem(new Label("Child Asset4(ECN)"));
-//		TreeItem casset5 = new TreeItem(new Label("Child Asset5(ECN)"));
-//
-//		asset1.addItem(casset1);
-//		asset2.addItem(casset2);
-//		asset3.addItem(casset3);
-//		asset4.addItem(casset4);
-//		asset5.addItem(casset5);
-//
-//		tree.addItem(asset1);
-//		tree.addItem(asset2);
-//		tree.addItem(asset3);
-//		tree.addItem(asset4);
-//		tree.addItem(asset5);
+		// TreeItem asset1 = new TreeItem(new Label("Asset1(ECN)"));
+		// TreeItem asset2 = new TreeItem(new Label("Asset2(ECN)"));
+		// TreeItem asset3 = new TreeItem(new Label("Asset3(ECN)"));
+		// TreeItem asset4 = new TreeItem(new Label("Asset4(ECN)"));
+		// TreeItem asset5 = new TreeItem(new Label("Asset5(ECN)"));
+		//
+		// // Child Assets
+		// TreeItem casset1 = new TreeItem(new Label("Child Asset1(ECN)"));
+		// TreeItem casset2 = new TreeItem(new Label("Child Asset2(ECN)"));
+		// TreeItem casset3 = new TreeItem(new Label("Child Asset3(ECN)"));
+		// TreeItem casset4 = new TreeItem(new Label("Child Asset4(ECN)"));
+		// TreeItem casset5 = new TreeItem(new Label("Child Asset5(ECN)"));
+		//
+		// asset1.addItem(casset1);
+		// asset2.addItem(casset2);
+		// asset3.addItem(casset3);
+		// asset4.addItem(casset4);
+		// asset5.addItem(casset5);
+		//
+		// tree.addItem(asset1);
+		// tree.addItem(asset2);
+		// tree.addItem(asset3);
+		// tree.addItem(asset4);
+		// tree.addItem(asset5);
 
 		renderTree(getElements(), tree);
 
@@ -143,15 +147,18 @@ public class TagBuilderPage {
 		for (final Element element : elements) {
 			Label label = new Label(element.getName());
 			TreeItem item = new TreeItem(label);
-			label.addClickHandler(new ClickHandler() {
+
+			label.getElement().setDraggable("true");
+
+			label.addDragStartHandler(new DragStartHandler() {
 
 				@Override
-				public void onClick(ClickEvent event) {
-					selectedElement = element;
-					updateTables();
+				public void onDragStart(DragStartEvent event) {
+					 event.setData("elementId", element.getId());
 				}
 
 			});
+
 			if (!element.getChildElements().isEmpty()) {
 				renderChildren(item, element.getChildElements());
 			}
@@ -163,63 +170,61 @@ public class TagBuilderPage {
 		for (final Element child : children) {
 			Label label = new Label(child.getName());
 			TreeItem childItem = new TreeItem(label);
-			label.addClickHandler(new ClickHandler() {
+
+			label.getElement().setDraggable("true");
+
+			label.addDragStartHandler(new DragStartHandler() {
 
 				@Override
-				public void onClick(ClickEvent event) {
-					selectedElement = child;
-					updateTables();
+				public void onDragStart(DragStartEvent event) {
+					event.setData("elementId", child.getId());
 				}
 
 			});
+
 			if (!child.getChildElements().isEmpty()) {
 				renderChildren(childItem, child.getChildElements());
 			}
 			parentItem.addItem(childItem);
 		}
 	}
-	
-	private void updateTables(){
-		jsUtil.sendMessageToServer("{\"request\":\"element\", \"id\":\""+ selectedElement.getId() + "\"}");
+
+	private void updateTables(String elementId) {
+		jsUtil.sendMessageToServer("{\"request\":\"element\", \"id\":\"" + elementId + "\"}");
 		Timer timer = new Timer() {
-            @Override
-            public void run() {
-            	resetTables();
-            	
-            	String data = jsUtil.getResponseData();
-            	JavaScriptObject dataArray = JsonUtils.safeEval(data);
-            	JavaScriptObject elementObject = jsUtil.getArrayElement(dataArray, 0);
-            	
-            	assetTable.setText(2, 0, "NULL");
-            	assetTable.setText(2, 1, jsUtil.getValueAsString(elementObject, "Name"));
-            	assetTable.setText(2, 2, "NULL");
-            	assetTable.setText(2, 3, "NULL");
-            	
-            	
-            	int row = 2;
-            	JavaScriptObject attributeArray = jsUtil.getObjectProperty(elementObject, "Attributes");
-            	if(attributeArray != null && jsUtil.isArray(attributeArray)){
-            		for(int i=0;i<jsUtil.getArrayLength(attributeArray); i++){
-            			JavaScriptObject attribute = jsUtil.getArrayElement(attributeArray, i);
-            			String description = jsUtil.getValueAsString(attribute, "Description");
-            			obsTable.setText(row, 0, "NULL");
-            			obsTable.setText(row, 1, "NULL");
-            			obsTable.setText(row, 2, description.trim().length()>0 ? description.trim() : "NULL");
-            			row++;
-            			
-            			tagTable.setText(row, 0, "NULL");
-            			tagTable.setText(row, 1, "NULL");
-            			tagTable.setText(row, 2, "NULL");
-            		}
-            	}
-            	
-            	
-            	
-            	
-            	
-            }
-        };
-        timer.schedule(1500);
+			@Override
+			public void run() {
+				resetTables();
+
+				String data = jsUtil.getResponseData();
+				JavaScriptObject dataArray = JsonUtils.safeEval(data);
+				JavaScriptObject elementObject = jsUtil.getArrayElement(dataArray, 0);
+
+				assetTable.setText(2, 0, "NULL");
+				assetTable.setText(2, 1, jsUtil.getValueAsString(elementObject, "Name"));
+				assetTable.setText(2, 2, "NULL");
+				assetTable.setText(2, 3, "NULL");
+
+				int row = 2;
+				JavaScriptObject attributeArray = jsUtil.getObjectProperty(elementObject, "Attributes");
+				if (attributeArray != null && jsUtil.isArray(attributeArray)) {
+					for (int i = 0; i < jsUtil.getArrayLength(attributeArray); i++) {
+						JavaScriptObject attribute = jsUtil.getArrayElement(attributeArray, i);
+						String description = jsUtil.getValueAsString(attribute, "Description");
+						obsTable.setText(row, 0, "NULL");
+						obsTable.setText(row, 1, "NULL");
+						obsTable.setText(row, 2, description.trim().length() > 0 ? description.trim() : "NULL");
+						row++;
+
+						tagTable.setText(row, 0, "NULL");
+						tagTable.setText(row, 1, "NULL");
+						tagTable.setText(row, 2, "NULL");
+					}
+				}
+
+			}
+		};
+		timer.schedule(1500);
 	}
 
 	// End: LeftSidebar
@@ -295,6 +300,25 @@ public class TagBuilderPage {
 
 		mainPanel.add(hpanel);
 		mainPanel.add(buildTagTable());
+		
+		mainPanel.addDomHandler(new DragOverHandler(){
+
+			@Override
+			public void onDragOver(DragOverEvent event) {
+				event.preventDefault();
+			}
+			
+		}, DragOverEvent.getType());
+		
+		mainPanel.addDomHandler(new DropHandler(){
+
+			@Override
+			public void onDrop(DropEvent event) {
+				String elementId = event.getData("elementId");
+				updateTables(elementId);
+			}
+			
+		}, DropEvent.getType());
 
 		return mainPanel;
 	}
@@ -326,12 +350,13 @@ public class TagBuilderPage {
 		assetTable.getRowFormatter().setStyleName(1, "bg-blue");
 		assetTable.getRowFormatter().getElement(1).getStyle().setProperty("cursor", "pointer");
 
-//		assetTable.setText(2, 0, "10171");
-//		assetTable.setText(2, 1, "10171");
-//		assetTable.setText(2, 2, "TAL116");
-//		assetTable.setText(2, 3, "Houston Plant");
-//
-//		assetTable.getRowFormatter().getElement(2).getStyle().setProperty("cursor", "pointer");
+		// assetTable.setText(2, 0, "10171");
+		// assetTable.setText(2, 1, "10171");
+		// assetTable.setText(2, 2, "TAL116");
+		// assetTable.setText(2, 3, "Houston Plant");
+		//
+		// assetTable.getRowFormatter().getElement(2).getStyle().setProperty("cursor",
+		// "pointer");
 
 		mainPanel.add(assetTable);
 
@@ -366,16 +391,18 @@ public class TagBuilderPage {
 		obsTable.getRowFormatter().setStyleName(1, "bg-blue");
 		obsTable.getRowFormatter().getElement(1).getStyle().setProperty("cursor", "pointer");
 
-//		obsTable.setText(2, 0, "Mechanical");
-//		obsTable.setText(2, 1, "1");
-//		obsTable.setText(2, 2, "40HP Motor Temperature");
-//
-//		obsTable.getRowFormatter().getElement(2).getStyle().setProperty("cursor", "pointer");
-//
-//		obsTable.setText(3, 0, "Mechanical");
-//		obsTable.setText(3, 1, "1");
-//		obsTable.setText(3, 2, "40HP Motor Temperature");
-//		obsTable.getRowFormatter().getElement(3).getStyle().setProperty("cursor", "pointer");
+		// obsTable.setText(2, 0, "Mechanical");
+		// obsTable.setText(2, 1, "1");
+		// obsTable.setText(2, 2, "40HP Motor Temperature");
+		//
+		// obsTable.getRowFormatter().getElement(2).getStyle().setProperty("cursor",
+		// "pointer");
+		//
+		// obsTable.setText(3, 0, "Mechanical");
+		// obsTable.setText(3, 1, "1");
+		// obsTable.setText(3, 2, "40HP Motor Temperature");
+		// obsTable.getRowFormatter().getElement(3).getStyle().setProperty("cursor",
+		// "pointer");
 
 		mainPanel.add(obsTable);
 
@@ -410,16 +437,18 @@ public class TagBuilderPage {
 		tagTable.getRowFormatter().setStyleName(1, "bg-blue");
 		tagTable.getRowFormatter().getElement(1).getStyle().setProperty("cursor", "pointer");
 
-//		tagTable.setText(2, 0, "40HPMTR723");
-//		tagTable.setText(2, 1, "1");
-//		tagTable.setText(2, 2, "AS-40HPMTR723-1");
-//
-//		tagTable.getRowFormatter().getElement(2).getStyle().setProperty("cursor", "pointer");
-//
-//		tagTable.setText(3, 0, "40HPMTR723");
-//		tagTable.setText(3, 1, "2");
-//		tagTable.setText(3, 2, "AS-40HPMTR723-2");
-//		tagTable.getRowFormatter().getElement(3).getStyle().setProperty("cursor", "pointer");
+		// tagTable.setText(2, 0, "40HPMTR723");
+		// tagTable.setText(2, 1, "1");
+		// tagTable.setText(2, 2, "AS-40HPMTR723-1");
+		//
+		// tagTable.getRowFormatter().getElement(2).getStyle().setProperty("cursor",
+		// "pointer");
+		//
+		// tagTable.setText(3, 0, "40HPMTR723");
+		// tagTable.setText(3, 1, "2");
+		// tagTable.setText(3, 2, "AS-40HPMTR723-2");
+		// tagTable.getRowFormatter().getElement(3).getStyle().setProperty("cursor",
+		// "pointer");
 
 		mainPanel.add(tagTable);
 
@@ -476,15 +505,15 @@ public class TagBuilderPage {
 
 			if (table == assetTable) {
 				TextBox ecnField = new TextBox();
-				String ecn = table.getText(row, 0)=="NULL" ? "" : table.getText(row, 0);
+				String ecn = table.getText(row, 0) == "NULL" ? "" : table.getText(row, 0);
 				ecnField.setText(ecn);
 
 				TextBox assetField = new TextBox();
-				String asset = table.getText(row, 1)=="NULL" ? "" : table.getText(row, 1);
+				String asset = table.getText(row, 1) == "NULL" ? "" : table.getText(row, 1);
 				assetField.setText(asset);
 
 				TextBox locationField = new TextBox();
-				String location = table.getText(row, 3)=="NULL" ? "" : table.getText(row, 1);
+				String location = table.getText(row, 3) == "NULL" ? "" : table.getText(row, 1);
 				locationField.setText(location);
 
 				table.setWidget(row, 0, ecnField);
@@ -531,7 +560,6 @@ public class TagBuilderPage {
 			String ecn = ((TextBox) table.getWidget(row, 0)).getText();
 			String asset = ((TextBox) table.getWidget(row, 1)).getText();
 			String location = ((TextBox) table.getWidget(row, 3)).getText();
-			
 
 			table.setText(row, 0, ecn.trim().length() < 1 ? "NULL" : ecn.trim());
 			table.setText(row, 1, asset.trim().length() < 1 ? "NULL" : asset.trim());
@@ -556,16 +584,16 @@ public class TagBuilderPage {
 
 		editableTable = null;
 	}
-	
+
 	private void resetTables() {
 		resetTable(assetTable);
 		resetTable(obsTable);
 		resetTable(tagTable);
 	}
-	
+
 	private void resetTable(FlexTable table) {
 		int lastRowIndex = table.getRowCount() - 1;
-		while(lastRowIndex >= 2){
+		while (lastRowIndex >= 2) {
 			table.removeRow(lastRowIndex);
 			lastRowIndex--;
 		}
@@ -573,7 +601,7 @@ public class TagBuilderPage {
 
 	private List<Element> getElements() {
 		List<Element> elements = new ArrayList<>();
-		
+
 		String data;
 		data = jsUtil.getAssetData();
 

@@ -6,7 +6,7 @@ import java.util.List;
 public class Element {
 	private String id;
 	private String name;
-	private List<Element> childElements = new ArrayList<>();;
+	private List<Element> childElements = new ArrayList<>();
 
 	public String getId() {
 		return id;

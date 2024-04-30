@@ -17,6 +17,6 @@ public class Tagbuilder implements EntryPoint {
 				tagBuilderPage.loadTagBuilderPage();
 			}
 		};
-		timer.schedule(1000);
+		timer.schedule(3000);
 	}
 }

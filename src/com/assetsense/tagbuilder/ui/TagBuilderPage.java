@@ -1,7 +1,9 @@
 package com.assetsense.tagbuilder.ui;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.assetsense.tagbuilder.pi.domain.Element;
 import com.assetsense.tagbuilder.utils.JsUtil;
@@ -46,6 +48,10 @@ public class TagBuilderPage {
 	private int selectedRow;
 	private FlexTable editableTable = null;
 	private int editableRow;
+
+	private int selectedAssetRow = 0;
+
+	private Map<Integer, JavaScriptObject> rowMap = new HashMap<Integer, JavaScriptObject>();
 
 	public void loadTagBuilderPage() {
 		RootLayoutPanel.get().clear();
@@ -104,7 +110,7 @@ public class TagBuilderPage {
 		searchPanel.setStyleName("searchPanel");
 
 		TextBox searchField = new TextBox();
-		
+
 		searchField.getElement().getStyle().setBackgroundColor("white");
 		searchField.getElement().setPropertyString("placeholder", "Search an Asset");
 
@@ -199,42 +205,55 @@ public class TagBuilderPage {
 		Timer timer = new Timer() {
 			@Override
 			public void run() {
-				resetTables();
+				// resetTables();
+				int row = getTableLastRow(assetTable);
 
 				String data = jsUtil.getResponseData();
 				JavaScriptObject dataArray = JsonUtils.safeEval(data);
 				JavaScriptObject elementObject = jsUtil.getArrayElement(dataArray, 0);
 
-				assetTable.setText(2, 0, "NULL");
-				assetTable.setText(2, 1, jsUtil.getValueAsString(elementObject, "Name"));
-				assetTable.setWidget(2, 2, getModelField());
-				assetTable.setText(2, 3, "NULL");
+				assetTable.setText(row, 0, "NULL");
+				assetTable.setText(row, 1, jsUtil.getValueAsString(elementObject, "Name"));
+				assetTable.setWidget(row, 2, getModelField());
+				assetTable.setText(row, 3, "NULL");
 
-				setCursorPointer(assetTable, 2);
+				setCursorPointer(assetTable, row);
 
-				int row = 2;
 				JavaScriptObject attributeArray = jsUtil.getObjectProperty(elementObject, "Attributes");
-				if (attributeArray != null && jsUtil.isArray(attributeArray)) {
-					for (int i = 0; i < jsUtil.getArrayLength(attributeArray); i++) {
-						JavaScriptObject attribute = jsUtil.getArrayElement(attributeArray, i);
-						String description = jsUtil.getValueAsString(attribute, "Description");
-						obsTable.setText(row, 0, "NULL");
-						obsTable.setText(row, 1, "NULL");
-						obsTable.setText(row, 2, description.trim().length() > 0 ? description.trim() : "NULL");
-						setCursorPointer(obsTable, row);
-
-						tagTable.setText(row, 0, "NULL");
-						tagTable.setText(row, 1, "NULL");
-						tagTable.setText(row, 2, "NULL");
-						setCursorPointer(tagTable, row);
-
-						row++;
-					}
-				}
-
+				updateObsAndTagTable(attributeArray);
+				rowMap.put(row, attributeArray);
+				selectedAssetRow = row;
+				resetTableStates();
 			}
 		};
 		timer.schedule(1500);
+	}
+
+	private void updateObsAndTagTable(JavaScriptObject attributeArray) {
+		resetTable(obsTable);
+		resetTable(tagTable);
+		int row = getTableLastRow(obsTable);
+		if (attributeArray != null && jsUtil.isArray(attributeArray)) {
+			for (int i = 0; i < jsUtil.getArrayLength(attributeArray); i++) {
+				JavaScriptObject attribute = jsUtil.getArrayElement(attributeArray, i);
+				String description = jsUtil.getValueAsString(attribute, "Description");
+				obsTable.setText(row, 0, "NULL");
+				obsTable.setText(row, 1, description.trim().length() > 0 ? description.trim() : "NULL");
+				obsTable.setText(row, 2, "NULL");
+				setCursorPointer(obsTable, row);
+
+				tagTable.setText(row, 0, "NULL");
+				tagTable.setText(row, 1, "NULL");
+				tagTable.setText(row, 2, "NULL");
+				setCursorPointer(tagTable, row);
+
+				row++;
+			}
+		}
+	}
+
+	private int getTableLastRow(FlexTable table) {
+		return table.getRowCount();
 	}
 
 	private void setCursorPointer(FlexTable table, int row) {
@@ -247,6 +266,7 @@ public class TagBuilderPage {
 		horizontalPanel.setStyleName("removeBorder");
 
 		ListBox listBox = new ListBox();
+		listBox.getElement().getStyle().setBackgroundColor("white");
 		listBox.setWidth("100%");
 
 		final Button addButton = new Button("+");
@@ -371,31 +391,31 @@ public class TagBuilderPage {
 			grid.setText(3, 0, "Supplier Master:");
 			grid.setWidget(3, 1, supplierField);
 			grid.setWidget(3, 2, addSupplierBtn);
-		}else {
+		} else {
 			TextBox supplierNameField = new TextBox();
 			supplierNameField.setStyleName("inputFieldStyle");
 
 			Button backBtn = new Button("X");
-			backBtn.addClickHandler(new ClickHandler(){
+			backBtn.addClickHandler(new ClickHandler() {
 
 				@Override
 				public void onClick(ClickEvent event) {
 					toggleSupplierField(grid, true);
 				}
-				
+
 			});
-			
+
 			backBtn.getElement().getStyle().setMarginLeft(5, Unit.PX);
-			
+
 			grid.setText(3, 0, "Supplier Name:");
 			grid.setWidget(3, 1, supplierNameField);
 			grid.setWidget(3, 2, backBtn);
 		}
 	}
 
-//	private void showDialogBox() {
-//
-//	}
+	// private void showDialogBox() {
+	//
+	// }
 
 	// End: LeftSidebar
 
@@ -520,12 +540,13 @@ public class TagBuilderPage {
 		assetTable.getRowFormatter().setStyleName(1, "bg-blue");
 		assetTable.getRowFormatter().getElement(1).getStyle().setProperty("cursor", "pointer");
 
-		assetTable.setText(2, 0, "NULL");
-		assetTable.setText(2, 1, "Hey");
-		assetTable.setWidget(2, 2, getModelField());
-		assetTable.setText(2, 3, "NULL");
+		// assetTable.setText(2, 0, "NULL");
+		// assetTable.setText(2, 1, "Hey");
+		// assetTable.setWidget(2, 2, getModelField());
+		// assetTable.setText(2, 3, "NULL");
 
-		assetTable.getRowFormatter().getElement(2).getStyle().setProperty("cursor", "pointer");
+		// assetTable.getRowFormatter().getElement(2).getStyle().setProperty("cursor",
+		// "pointer");
 
 		mainPanel.add(assetTable);
 
@@ -553,9 +574,9 @@ public class TagBuilderPage {
 		obsTable.getRowFormatter().setStyleName(0, "bg-blue");
 		obsTable.getRowFormatter().getElement(0).getStyle().setProperty("borderBottom", "1px solid black");
 
-		obsTable.setText(1, 0, "Functional Category");
-		obsTable.setText(1, 1, "Code");
-		obsTable.setText(1, 2, "Description");
+		obsTable.setText(1, 0, "Code");
+		obsTable.setText(1, 1, "Description");
+		obsTable.setText(1, 2, "Input Type");
 
 		obsTable.getRowFormatter().setStyleName(1, "bg-blue");
 		obsTable.getRowFormatter().getElement(1).getStyle().setProperty("cursor", "pointer");
@@ -662,6 +683,13 @@ public class TagBuilderPage {
 		});
 	}
 
+	private void resetTableStates() {
+		selectedTable = null;
+		selectedRow = 0;
+		editableTable = null;
+		editableRow = 0;
+	}
+
 	private void handleSelection(FlexTable table, int row) {
 		if (selectedTable != null) {
 			selectedTable.getRowFormatter().removeStyleName(selectedRow, "selectedRow");
@@ -670,6 +698,10 @@ public class TagBuilderPage {
 		table.getRowFormatter().addStyleName(row, "selectedRow");
 		selectedTable = table;
 		selectedRow = row;
+		if (table == assetTable && selectedAssetRow != row) {
+			updateObsAndTagTable(rowMap.get(row));
+			selectedAssetRow = row;
+		}
 	}
 
 	private void convertRowToEditable() {
@@ -694,19 +726,19 @@ public class TagBuilderPage {
 				table.setWidget(row, 1, assetField);
 				table.setWidget(row, 3, locationField);
 			} else if (table == obsTable) {
-
-				TextBox funcCatField = new TextBox();
-				funcCatField.setText(table.getText(row, 0));
-
 				TextBox codeField = new TextBox();
-				codeField.setText(table.getText(row, 1));
+				codeField.setText(table.getText(row, 0));
 
 				TextBox descriptionField = new TextBox();
-				descriptionField.setText(table.getText(row, 2));
+				descriptionField.setText(table.getText(row, 1));
 
-				table.setWidget(row, 0, funcCatField);
-				table.setWidget(row, 1, codeField);
-				table.setWidget(row, 2, descriptionField);
+				ListBox inputTypeField = new ListBox();
+				inputTypeField.getElement().getStyle().setProperty("width", "100%");
+				inputTypeField.addItem("NULL");
+
+				table.setWidget(row, 0, codeField);
+				table.setWidget(row, 1, descriptionField);
+				table.setWidget(row, 2, inputTypeField);
 			} else if (table == tagTable) {
 				TextBox assetField = new TextBox();
 				assetField.setText(table.getText(row, 0));
@@ -739,13 +771,13 @@ public class TagBuilderPage {
 			table.setText(row, 1, asset.trim().length() < 1 ? "NULL" : asset.trim());
 			table.setText(row, 3, location.trim().length() < 1 ? "NULL" : location.trim());
 		} else if (table == obsTable) {
-			String funcCat = ((TextBox) table.getWidget(row, 0)).getText();
-			String code = ((TextBox) table.getWidget(row, 1)).getText();
-			String description = ((TextBox) table.getWidget(row, 2)).getText();
+			String code = ((TextBox) table.getWidget(row, 0)).getText();
+			String description = ((TextBox) table.getWidget(row, 1)).getText();
+			String funcCat = ((ListBox) table.getWidget(row, 2)).getSelectedValue();
 
-			table.setText(row, 0, funcCat);
-			table.setText(row, 1, code);
-			table.setText(row, 2, description);
+			table.setText(row, 0, code);
+			table.setText(row, 1, description);
+			table.setText(row, 2, funcCat);
 		} else if (table == tagTable) {
 			String asset = ((TextBox) table.getWidget(row, 0)).getText();
 			String code = ((TextBox) table.getWidget(row, 1)).getText();
@@ -757,12 +789,6 @@ public class TagBuilderPage {
 		}
 
 		editableTable = null;
-	}
-
-	private void resetTables() {
-		resetTable(assetTable);
-		resetTable(obsTable);
-		resetTable(tagTable);
 	}
 
 	private void resetTable(FlexTable table) {

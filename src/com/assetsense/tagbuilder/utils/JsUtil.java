@@ -1,6 +1,7 @@
 package com.assetsense.tagbuilder.utils;
 
 import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class JsUtil {
 
@@ -63,9 +64,17 @@ public class JsUtil {
 	public native String getResponseData() /*-{
 		return $wnd.getResponseData();
 	}-*/;
-	
-	public native void sendMessageToServer(String message) /*-{
+
+	public native String sendMessageToServer(String message) /*-{
 		return $wnd.sendMessageToServer(message);
 	}-*/;
-	
+
+	public native void sendMessageToServer(String message, AsyncCallback<String> callback) /*-{
+		$wnd
+				.sendMessageToServer(
+						message,
+						function(data) {
+							callback.@com.google.gwt.user.client.rpc.AsyncCallback::onSuccess(Ljava/lang/Object;)(data);
+						});
+	}-*/;
 }

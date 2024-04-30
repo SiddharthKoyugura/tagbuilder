@@ -18,7 +18,7 @@ import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.DropHandler;
-import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -120,7 +120,7 @@ public class TagBuilderPage {
 	}
 
 	private Tree buildAssetTree() {
-		Tree tree = new Tree();
+		final Tree tree = new Tree();
 		tree.getElement().getStyle().setMarginTop(10, Unit.PX);
 
 		// Parent Assets
@@ -149,7 +149,18 @@ public class TagBuilderPage {
 		// tree.addItem(asset4);
 		// tree.addItem(asset5);
 
-		renderTree(getElements(), tree);
+		
+		jsUtil.sendMessageToServer("{\"request\":\"elementsHierarchy\", \"id\":\"\"}", new AsyncCallback<String>() {
+			@Override
+			public void onFailure(Throwable caught) {
+				// Handle failure
+			}
+
+			@Override
+			public void onSuccess(String result) {
+				renderTree(getElements(result), tree);
+			}
+		});
 
 		return tree;
 	}
@@ -201,14 +212,18 @@ public class TagBuilderPage {
 	}
 
 	private void updateTables(String elementId) {
-		jsUtil.sendMessageToServer("{\"request\":\"element\", \"id\":\"" + elementId + "\"}");
-		Timer timer = new Timer() {
+//		jsUtil.sendMessageToServer("{\"request\":\"element\", \"id\":\"" + elementId + "\"}");
+		
+		jsUtil.sendMessageToServer("{\"request\":\"element\", \"id\":\"" + elementId + "\"}", new AsyncCallback<String>() {
 			@Override
-			public void run() {
-				// resetTables();
+			public void onFailure(Throwable caught) {
+				// Handle failure
+			}
+
+			@Override
+			public void onSuccess(String data) {
 				int row = getTableLastRow(assetTable);
 
-				String data = jsUtil.getResponseData();
 				JavaScriptObject dataArray = JsonUtils.safeEval(data);
 				JavaScriptObject elementObject = jsUtil.getArrayElement(dataArray, 0);
 
@@ -225,8 +240,8 @@ public class TagBuilderPage {
 				selectedAssetRow = row;
 				resetTableStates();
 			}
-		};
-		timer.schedule(1500);
+		});
+
 	}
 
 	private void updateObsAndTagTable(JavaScriptObject attributeArray) {
@@ -799,11 +814,8 @@ public class TagBuilderPage {
 		}
 	}
 
-	private List<Element> getElements() {
+	private List<Element> getElements(String data) {
 		List<Element> elements = new ArrayList<>();
-
-		String data;
-		data = jsUtil.getAssetData();
 
 		if (data != null) {
 			JavaScriptObject jsArray = JsonUtils.safeEval(data);

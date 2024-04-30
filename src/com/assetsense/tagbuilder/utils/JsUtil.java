@@ -65,13 +65,8 @@ public class JsUtil {
 		return $wnd.getResponseData();
 	}-*/;
 
-	public native String sendMessageToServer(String message) /*-{
-		return $wnd.sendMessageToServer(message);
-	}-*/;
-
 	public native void sendMessageToServer(String message, AsyncCallback<String> callback) /*-{
-		$wnd
-				.sendMessageToServer(
+		$wnd.sendMessageToServer(
 						message,
 						function(data) {
 							callback.@com.google.gwt.user.client.rpc.AsyncCallback::onSuccess(Ljava/lang/Object;)(data);

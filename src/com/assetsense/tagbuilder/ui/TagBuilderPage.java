@@ -149,7 +149,6 @@ public class TagBuilderPage {
 		// tree.addItem(asset4);
 		// tree.addItem(asset5);
 
-		
 		jsUtil.sendMessageToServer("{\"request\":\"elementsHierarchy\", \"id\":\"\"}", new AsyncCallback<String>() {
 			@Override
 			public void onFailure(Throwable caught) {
@@ -212,35 +211,43 @@ public class TagBuilderPage {
 	}
 
 	private void updateTables(String elementId) {
-//		jsUtil.sendMessageToServer("{\"request\":\"element\", \"id\":\"" + elementId + "\"}");
-		
-		jsUtil.sendMessageToServer("{\"request\":\"element\", \"id\":\"" + elementId + "\"}", new AsyncCallback<String>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				// Handle failure
-			}
+		jsUtil.sendMessageToServer("{\"request\":\"element\", \"id\":\"" + elementId + "\"}",
+				new AsyncCallback<String>() {
+					@Override
+					public void onFailure(Throwable caught) {
+						// Handle failure
+					}
 
-			@Override
-			public void onSuccess(String data) {
-				int row = getTableLastRow(assetTable);
+					@Override
+					public void onSuccess(String data) {
+						int row = getTableLastRow(assetTable);
 
-				JavaScriptObject dataArray = JsonUtils.safeEval(data);
-				JavaScriptObject elementObject = jsUtil.getArrayElement(dataArray, 0);
+						JavaScriptObject dataArray = JsonUtils.safeEval(data);
+						JavaScriptObject elementObject = jsUtil.getArrayElement(dataArray, 0);
 
-				assetTable.setText(row, 0, "NULL");
-				assetTable.setText(row, 1, jsUtil.getValueAsString(elementObject, "Name"));
-				assetTable.setWidget(row, 2, getModelField());
-				assetTable.setText(row, 3, "NULL");
+						assetTable.setText(row, 0, "NULL");
+						assetTable.setText(row, 1, jsUtil.getValueAsString(elementObject, "Name"));
+						assetTable.setWidget(row, 2, getModelField());
+						assetTable.setText(row, 3, "NULL");
 
-				setCursorPointer(assetTable, row);
+						setCursorPointer(assetTable, row);
 
-				JavaScriptObject attributeArray = jsUtil.getObjectProperty(elementObject, "Attributes");
-				updateObsAndTagTable(attributeArray);
-				rowMap.put(row, attributeArray);
-				selectedAssetRow = row;
-				resetTableStates();
-			}
-		});
+						JavaScriptObject attributeArray = jsUtil.getObjectProperty(elementObject, "Attributes");
+						updateObsAndTagTable(attributeArray);
+						rowMap.put(row, attributeArray);
+						
+						if (selectedTable == assetTable) {
+							selectedTable.getRowFormatter().removeStyleName(selectedAssetRow, "selectedRow");
+						}
+						
+						selectedAssetRow = row;
+
+						selectedTable = assetTable;
+						selectedRow = row;
+
+						resetTableStates();
+					}
+				});
 
 	}
 
@@ -427,10 +434,6 @@ public class TagBuilderPage {
 			grid.setWidget(3, 2, backBtn);
 		}
 	}
-
-	// private void showDialogBox() {
-	//
-	// }
 
 	// End: LeftSidebar
 
@@ -699,7 +702,11 @@ public class TagBuilderPage {
 	}
 
 	private void resetTableStates() {
-		selectedTable = null;
+		if (selectedTable == assetTable) {
+			selectedTable.getRowFormatter().addStyleName(selectedAssetRow, "selectedRow");
+		}else{
+			selectedTable = null;
+		}
 		selectedRow = 0;
 		editableTable = null;
 		editableRow = 0;

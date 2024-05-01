@@ -4,7 +4,7 @@
 "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping>
-	<class name="com.assetsense.tagbuilder.pi.domain.Lookup" table="lookup">
+	<class name="com.assetsense.tagbuilder.c2.domain.Lookup" table="lookup">
 		<id name="id" column="id" type="long">
 			<generator class="native"/>
 		</id>

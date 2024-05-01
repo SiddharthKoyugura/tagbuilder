@@ -703,11 +703,11 @@ public class TagBuilderPage {
 
 	private void resetTableStates() {
 		if (selectedTable == assetTable) {
-			selectedTable.getRowFormatter().addStyleName(selectedAssetRow, "selectedRow");
+			selectedTable.getRowFormatter().addStyleName(selectedRow, "selectedRow");
 		}else{
 			selectedTable = null;
+			selectedRow = 0;
 		}
-		selectedRow = 0;
 		editableTable = null;
 		editableRow = 0;
 	}

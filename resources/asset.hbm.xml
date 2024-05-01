@@ -5,8 +5,7 @@
 
 <hibernate-mapping>
 	<class name="com.assetsense.tagbuilder.c2.domain.Asset" table="ASSET">
-		<id name="id" column="id" type="long">
-			<generator class="native"/>
+		<id name="id" column="id" type="string">
 		</id>
 
 		<property name="name" column="name" not-null="false" type="string"></property>

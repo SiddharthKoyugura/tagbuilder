@@ -149,7 +149,7 @@ public class TagBuilderPage {
 		// tree.addItem(asset4);
 		// tree.addItem(asset5);
 
-		jsUtil.sendMessageToServer("{\"request\":\"elementsHierarchy\", \"id\":\"\"}", new AsyncCallback<String>() {
+		jsUtil.sendMessageToServer("{\"request\":\"elements\", \"id\":\"\"}", new AsyncCallback<String>() {
 			@Override
 			public void onFailure(Throwable caught) {
 				// Handle failure

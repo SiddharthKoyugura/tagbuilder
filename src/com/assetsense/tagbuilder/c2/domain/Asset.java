@@ -14,7 +14,7 @@ public class Asset implements Serializable {
 	private String id;
 	private String name;
 	private String ecn;
-	private String model;
+	private Lookup model;
 	private String location;
 	private Lookup Assettype;
 	private Lookup supplierName;
@@ -50,11 +50,11 @@ public class Asset implements Serializable {
 		this.ecn = ecn;
 	}
 
-	public String getModel() {
+	public Lookup getModel() {
 		return model;
 	}
 
-	public void setModel(String model) {
+	public void setModel(Lookup model) {
 		this.model = model;
 	}
 

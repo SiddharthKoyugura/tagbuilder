@@ -10,7 +10,7 @@
 
 		<property name="name" column="name" not-null="false" type="string"></property>
 		<property name="ecn" column="ecn" unique="true" not-null="false" type="string"></property>
-		<property name="model" column="model" not-null="false" type="string"></property>
+		<many-to-one name="model" column="model" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" />
 		<property name="location" column="location" not-null="false" type="string"></property>
 		<property name="category" column="category" not-null="false" type="string"></property>
 		<list name="childAssets" cascade="all">

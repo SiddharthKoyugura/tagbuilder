@@ -96,4 +96,10 @@ public class Asset implements Serializable {
 		this.observations = observations;
 	}
 
+	@Override
+	public String toString() {
+		return "Asset [id=" + id + ", name=" + name + ", ecn=" + ecn + ", model=" + model + ", location=" + location
+				+ ", category=" + category + ", childAssets=" + childAssets + ", observations=" + observations + "]";
+	}
+
 }

@@ -6,9 +6,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.assetsense.tagbuilder.c2.domain.Asset;
+import com.assetsense.tagbuilder.service.AssetService;
+import com.assetsense.tagbuilder.service.AssetServiceAsync;
 import com.assetsense.tagbuilder.utils.JsUtil;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
+import com.google.gwt.core.shared.GWT;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -18,6 +21,7 @@ import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.DropHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
@@ -38,6 +42,9 @@ import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 public class TagBuilderPage {
+
+	private final AssetServiceAsync assetService = GWT.create(AssetService.class);
+
 	private final JsUtil jsUtil = new JsUtil();
 
 	private FlexTable assetTable;
@@ -157,7 +164,8 @@ public class TagBuilderPage {
 
 			@Override
 			public void onSuccess(String result) {
-				renderTree(getElements(result), tree);
+				// renderTree(getElements(result), tree);
+				getElements(result, tree);
 			}
 		});
 
@@ -235,11 +243,11 @@ public class TagBuilderPage {
 						JavaScriptObject attributeArray = jsUtil.getObjectProperty(elementObject, "Attributes");
 						updateObsAndTagTable(attributeArray);
 						rowMap.put(row, attributeArray);
-						
+
 						if (selectedTable == assetTable) {
 							selectedTable.getRowFormatter().removeStyleName(selectedAssetRow, "selectedRow");
 						}
-						
+
 						selectedAssetRow = row;
 
 						selectedTable = assetTable;
@@ -704,7 +712,7 @@ public class TagBuilderPage {
 	private void resetTableStates() {
 		if (selectedTable == assetTable) {
 			selectedTable.getRowFormatter().addStyleName(selectedRow, "selectedRow");
-		}else{
+		} else {
 			selectedTable = null;
 			selectedRow = 0;
 		}
@@ -821,39 +829,53 @@ public class TagBuilderPage {
 		}
 	}
 
-	private List<Asset> getElements(String data) {
-		List<Asset> assets = new ArrayList<>();
+	private void getElements(String data, final Tree tree) {
 
 		if (data != null) {
 			JavaScriptObject jsArray = JsonUtils.safeEval(data);
 
-			for (int i = 0; i < jsUtil.getArrayLength(jsArray); i++) {
-				JavaScriptObject elementObject = jsUtil.getArrayElement(jsArray, i);
+			final List<Asset> assets = getAssetHierrarchy(jsArray);
+			
+			assetService.saveAsset(assets.get(0), new AsyncCallback<Void>(){
 
-				Asset asset = new Asset();
-				String name = jsUtil.getValueAsString(elementObject, "Name");
-				String id = jsUtil.getValueAsString(elementObject, "ID");
-
-				asset.setId(id);
-				asset.setName(name);
-
-				JavaScriptObject childElementsArray = jsUtil.getObjectProperty(elementObject, "Elements");
-				if (childElementsArray != null && jsUtil.isArray(childElementsArray)) {
-					for (int j = 0; j < jsUtil.getArrayLength(childElementsArray); j++) {
-						JavaScriptObject childElObject = jsUtil.getArrayElement(childElementsArray, j);
-						String childName = jsUtil.getValueAsString(childElObject, "Name");
-						String childId = jsUtil.getValueAsString(childElObject, "ID");
-
-						Asset childAsset = new Asset();
-						childAsset.setName(childName);
-						childAsset.setId(childId);
-
-						asset.getChildAssets().add(childAsset);
-
-					}
+				@Override
+				public void onFailure(Throwable caught) {
+					// TODO Auto-generated method stub
+					Window.alert("hey");
 				}
-				assets.add(asset);
+
+				@Override
+				public void onSuccess(Void result) {
+					// TODO Auto-generated method stub
+					Window.alert("Hello");
+					renderTree(assets, tree);
+				}
+				
+			});
+		}
+	}
+
+	private List<Asset> getAssetHierrarchy(JavaScriptObject assetArray) {
+		List<Asset> assets = new ArrayList<>();
+
+		for (int i = 0; i < jsUtil.getArrayLength(assetArray); i++) {
+			JavaScriptObject elementObject = jsUtil.getArrayElement(assetArray, i);
+
+			Asset asset = new Asset();
+			String name = jsUtil.getValueAsString(elementObject, "Name");
+			String id = jsUtil.getValueAsString(elementObject, "ID");
+
+			asset.setId(id);
+			asset.setName(name);
+			
+
+			JavaScriptObject childAssetsArray = jsUtil.getObjectProperty(elementObject, "Elements");
+			if (childAssetsArray != null && jsUtil.isArray(childAssetsArray)) {
+				List<Asset> childAssets = getAssetHierrarchy(childAssetsArray);
+				asset.setChildAssets(childAssets);
 			}
+			
+			assets.add(asset);
 		}
 
 		return assets;

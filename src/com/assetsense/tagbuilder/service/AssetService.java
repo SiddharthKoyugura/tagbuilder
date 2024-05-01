@@ -6,5 +6,5 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 @RemoteServiceRelativePath("asset")
 public interface AssetService extends RemoteService{
-	void saveAsset(Asset asset) throws IllegalArgumentException;
+	void saveAsset(Asset asset);
 }

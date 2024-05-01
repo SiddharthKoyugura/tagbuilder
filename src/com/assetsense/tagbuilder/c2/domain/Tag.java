@@ -10,6 +10,8 @@ public class Tag implements Serializable {
 	private long id;
 	private String name;
 	private Asset asset;
+	private Observation observation;
+	private Lookup category;
 
 	public Tag() {
 	}
@@ -36,6 +38,22 @@ public class Tag implements Serializable {
 
 	public void setAsset(Asset asset) {
 		this.asset = asset;
+	}
+
+	public Observation getObservation() {
+		return observation;
+	}
+
+	public void setObservation(Observation observation) {
+		this.observation = observation;
+	}
+
+	public Lookup getCategory() {
+		return category;
+	}
+
+	public void setCategory(Lookup category) {
+		this.category = category;
 	}
 
 }

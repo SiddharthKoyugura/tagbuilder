@@ -16,6 +16,8 @@ public class Asset implements Serializable {
 	private String ecn;
 	private Lookup model;
 	private String location;
+	private Lookup assettype;
+	private Lookup supplierName;
 
 	private String category;
 	private List<Asset> childAssets = new ArrayList<>();
@@ -96,10 +98,21 @@ public class Asset implements Serializable {
 		this.observations = observations;
 	}
 
-	@Override
-	public String toString() {
-		return "Asset [id=" + id + ", name=" + name + ", ecn=" + ecn + ", model=" + model + ", location=" + location
-				+ ", category=" + category + ", childAssets=" + childAssets + ", observations=" + observations + "]";
+	public Lookup getAssettype() {
+		return assettype;
 	}
 
+	public void setAssettype(Lookup assettype) {
+		this.assettype = assettype;
+	}
+
+	public Lookup getSupplierName() {
+		return supplierName;
+	}
+
+	public void setSupplierName(Lookup supplierName) {
+		this.supplierName = supplierName;
+	}
+
+	
 }

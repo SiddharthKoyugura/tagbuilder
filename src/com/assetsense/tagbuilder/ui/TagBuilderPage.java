@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.assetsense.tagbuilder.pi.domain.Element;
+import com.assetsense.tagbuilder.c2.domain.Asset;
 import com.assetsense.tagbuilder.utils.JsUtil;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
@@ -164,9 +164,9 @@ public class TagBuilderPage {
 		return tree;
 	}
 
-	private void renderTree(List<Element> elements, Tree tree) {
-		for (final Element element : elements) {
-			Label label = new Label(element.getName());
+	private void renderTree(List<Asset> assets, Tree tree) {
+		for (final Asset asset : assets) {
+			Label label = new Label(asset.getName());
 			TreeItem item = new TreeItem(label);
 
 			label.getElement().setDraggable("true");
@@ -175,20 +175,20 @@ public class TagBuilderPage {
 
 				@Override
 				public void onDragStart(DragStartEvent event) {
-					event.setData("elementId", element.getId());
+					event.setData("elementId", asset.getId());
 				}
 
 			});
 
-			if (!element.getChildElements().isEmpty()) {
-				renderChildren(item, element.getChildElements());
+			if (!asset.getChildAssets().isEmpty()) {
+				renderChildren(item, asset.getChildAssets());
 			}
 			tree.addItem(item);
 		}
 	}
 
-	private void renderChildren(TreeItem parentItem, List<Element> children) {
-		for (final Element child : children) {
+	private void renderChildren(TreeItem parentItem, List<Asset> children) {
+		for (final Asset child : children) {
 			Label label = new Label(child.getName());
 			TreeItem childItem = new TreeItem(label);
 
@@ -203,8 +203,8 @@ public class TagBuilderPage {
 
 			});
 
-			if (!child.getChildElements().isEmpty()) {
-				renderChildren(childItem, child.getChildElements());
+			if (!child.getChildAssets().isEmpty()) {
+				renderChildren(childItem, child.getChildAssets());
 			}
 			parentItem.addItem(childItem);
 		}
@@ -821,8 +821,8 @@ public class TagBuilderPage {
 		}
 	}
 
-	private List<Element> getElements(String data) {
-		List<Element> elements = new ArrayList<>();
+	private List<Asset> getElements(String data) {
+		List<Asset> assets = new ArrayList<>();
 
 		if (data != null) {
 			JavaScriptObject jsArray = JsonUtils.safeEval(data);
@@ -830,12 +830,12 @@ public class TagBuilderPage {
 			for (int i = 0; i < jsUtil.getArrayLength(jsArray); i++) {
 				JavaScriptObject elementObject = jsUtil.getArrayElement(jsArray, i);
 
-				Element element = new Element();
+				Asset asset = new Asset();
 				String name = jsUtil.getValueAsString(elementObject, "Name");
 				String id = jsUtil.getValueAsString(elementObject, "ID");
 
-				element.setId(id);
-				element.setName(name);
+				asset.setId(id);
+				asset.setName(name);
 
 				JavaScriptObject childElementsArray = jsUtil.getObjectProperty(elementObject, "Elements");
 				if (childElementsArray != null && jsUtil.isArray(childElementsArray)) {
@@ -844,19 +844,19 @@ public class TagBuilderPage {
 						String childName = jsUtil.getValueAsString(childElObject, "Name");
 						String childId = jsUtil.getValueAsString(childElObject, "ID");
 
-						Element childElement = new Element();
-						childElement.setName(childName);
-						childElement.setId(childId);
+						Asset childAsset = new Asset();
+						childAsset.setName(childName);
+						childAsset.setId(childId);
 
-						element.getChildElements().add(childElement);
+						asset.getChildAssets().add(childAsset);
 
 					}
 				}
-				elements.add(element);
+				assets.add(asset);
 			}
 		}
 
-		return elements;
+		return assets;
 	}
 
 }

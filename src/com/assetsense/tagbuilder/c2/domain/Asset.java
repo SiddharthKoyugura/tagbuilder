@@ -11,7 +11,7 @@ public class Asset implements Serializable {
 	 */
 
 	private static final long serialVersionUID = 1L;
-	private long id;
+	private String id;
 	private String name;
 	private String ecn;
 	private String model;
@@ -24,24 +24,24 @@ public class Asset implements Serializable {
 	public Asset() {
 	}
 
-	public long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
-	// public String getName() {
-	// return name;
-	// }
-	//
-	// public void setName(String name) {
-	// this.name = name;
-	// }
-
 	public String getEcn() {
 		return ecn;
+	}
+
+	public List<Observation> getObservations() {
+		return observations;
+	}
+
+	public void setObservations(List<Observation> observations) {
+		this.observations = observations;
 	}
 
 	public void setEcn(String ecn) {

@@ -4,13 +4,12 @@
 "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 
 <hibernate-mapping>
-	<class name="com.assetsense.tagbuilder.pi.domain.Element" table="elements">
+	<class name="com.assetsense.tagbuilder.pi.domain.Lookup" table="lookup">
 		<id name="id" column="id" type="long">
 			<generator class="native"/>
 		</id>
 
+		<property name="categoryId" column="category_id" not-null="false" type="string"></property>
 		<property name="name" column="name" not-null="false" type="string"></property>
-		<!--<many-to-one name="childElement" column="childElements" not-null="false" />
-		<many-to-one name="attribute" column="attribute" not-null="false"/>-->
 	</class>
 </hibernate-mapping>

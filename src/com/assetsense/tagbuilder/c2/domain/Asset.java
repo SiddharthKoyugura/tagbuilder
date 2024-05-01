@@ -16,7 +16,7 @@ public class Asset implements Serializable {
 	private String ecn;
 	private Lookup model;
 	private String location;
-	private Lookup Assettype;
+	private Lookup assettype;
 	private Lookup supplierName;
 
 	private String category;
@@ -98,4 +98,21 @@ public class Asset implements Serializable {
 		this.observations = observations;
 	}
 
+	public Lookup getAssettype() {
+		return assettype;
+	}
+
+	public void setAssettype(Lookup assettype) {
+		this.assettype = assettype;
+	}
+
+	public Lookup getSupplierName() {
+		return supplierName;
+	}
+
+	public void setSupplierName(Lookup supplierName) {
+		this.supplierName = supplierName;
+	}
+
+	
 }

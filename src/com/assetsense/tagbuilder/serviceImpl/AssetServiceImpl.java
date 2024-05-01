@@ -2,10 +2,10 @@ package com.assetsense.tagbuilder.serviceImpl;
 
 import com.assetsense.tagbuilder.c2.domain.Asset;
 import com.assetsense.tagbuilder.dao.AssetDao;
-import com.assetsense.tagbuilder.dao.AssetDaoImpl;
 import com.assetsense.tagbuilder.service.AssetService;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
+@SuppressWarnings("serial")
 public class AssetServiceImpl extends RemoteServiceServlet implements AssetService{
 
 	private AssetDao assetDao;

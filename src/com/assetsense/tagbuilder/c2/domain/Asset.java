@@ -16,6 +16,8 @@ public class Asset implements Serializable {
 	private String ecn;
 	private String model;
 	private String location;
+	private Lookup Assettype;
+	private Lookup supplierName;
 
 	private String category;
 	private List<Asset> childAssets = new ArrayList<>();

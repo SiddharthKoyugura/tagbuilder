@@ -5,14 +5,14 @@
 
 <hibernate-mapping>
 	<class name="com.assetsense.tagbuilder.c2.domain.Asset" table="ASSET">
-		<id name="id" column="id">
+		<id name="id" column="id" type="long">
 			<generator class="native"/>
 		</id>
 
-		<property name="name" column="name" not-null="false"></property>
-		<property name="ecn" column="ecn" unique="true" not-null="false"></property>
-		<property name="model" column="model" not-null="false"></property>
-		<property name="location" column="location" not-null="false"></property>
+		<property name="name" column="name" not-null="false" type="string"></property>
+		<property name="ecn" column="ecn" unique="true" not-null="false" type="string"></property>
+		<property name="model" column="model" not-null="false" type="string"></property>
+		<property name="location" column="location" not-null="false" type="string"></property>
 		
 		<many-to-one name="parentAsset" column="parent_asset_id" not-null="false" />
 	</class>

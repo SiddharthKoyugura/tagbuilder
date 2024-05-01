@@ -3,10 +3,13 @@ package com.assetsense.tagbuilder.pi.domain;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.assetsense.tagbuilder.c2.domain.Attribute;
+
 public class Element {
 	private String id;
 	private String name;
-	private List<Element> childElements = new ArrayList<>();;
+	private List<Element> childElements = new ArrayList<>();
+	private List<Attribute> attribute = new ArrayList<>();
 
 	public String getId() {
 		return id;

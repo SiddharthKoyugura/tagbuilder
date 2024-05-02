@@ -13,7 +13,7 @@ public class AssetServiceImpl extends RemoteServiceServlet implements AssetServi
 	
 	@Override
 	public void saveAsset(Asset asset) {
-		assetDao = (AssetDao) ApplicationContextListener.applicationContext.getBean("AssetDaoImpl");
+		assetDao = (AssetDao) ApplicationContextListener.applicationContext.getBean("assetDaoImpl");
 		System.out.println("Hellloafsdfasdjfasdfads");
 		assetDao.saveAsset(asset);
 	}

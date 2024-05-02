@@ -3,7 +3,6 @@ package com.assetsense.tagbuilder.serviceImpl;
 import java.util.List;
 
 import com.assetsense.tagbuilder.c2.domain.Lookup;
-import com.assetsense.tagbuilder.dao.AssetDao;
 import com.assetsense.tagbuilder.dao.LookupDao;
 import com.assetsense.tagbuilder.service.LookupService;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;

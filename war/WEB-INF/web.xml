@@ -34,6 +34,16 @@
 		<servlet-name>tagServlet</servlet-name>
 		<url-pattern>/tagbuilder/tag</url-pattern>
 	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>lookupServlet</servlet-name>
+		<servlet-class>com.assetsense.tagbuilder.serviceImpl.LookupServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>lookupServlet</servlet-name>
+		<url-pattern>/tagbuilder/lookup</url-pattern>
+	</servlet-mapping>
 
 	<!-- Default page to serve -->
 	<welcome-file-list>

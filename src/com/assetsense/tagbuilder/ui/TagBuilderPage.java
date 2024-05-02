@@ -11,6 +11,8 @@ import com.assetsense.tagbuilder.dto.AssetDTO;
 import com.assetsense.tagbuilder.dto.ObservationDTO;
 import com.assetsense.tagbuilder.service.AssetService;
 import com.assetsense.tagbuilder.service.AssetServiceAsync;
+import com.assetsense.tagbuilder.service.LookupService;
+import com.assetsense.tagbuilder.service.LookupServiceAsync;
 import com.assetsense.tagbuilder.utils.JsUtil;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
@@ -47,6 +49,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class TagBuilderPage {
 
 	private final AssetServiceAsync assetService = GWT.create(AssetService.class);
+	private final LookupServiceAsync lookupService = GWT.create(LookupService.class);
 	// private final TagServiceAsync tagService = GWT.create(TagService.class);
 
 	private final JsUtil jsUtil = new JsUtil();
@@ -346,6 +349,8 @@ public class TagBuilderPage {
 		ListBox listBox = new ListBox();
 		listBox.getElement().getStyle().setBackgroundColor("white");
 		listBox.setWidth("100%");
+		
+		
 
 		final Button addButton = new Button("+");
 		addButton.getElement().getStyle().setProperty("cursor", "pointer");
@@ -391,8 +396,6 @@ public class TagBuilderPage {
 				grid.getElement().getStyle().setProperty("borderCollapse", "collapse");
 				grid.setWidth("100%");
 
-				TextBox nameField = new TextBox();
-				nameField.setStyleName("inputFieldStyle");
 
 				TextBox modelField = new TextBox();
 				modelField.setStyleName("inputFieldStyle");
@@ -400,21 +403,18 @@ public class TagBuilderPage {
 				ListBox assetTypeField = new ListBox();
 				assetTypeField.setStyleName("inputFieldStyle");
 
-				grid.setText(0, 0, "Model Name:");
-				grid.setWidget(0, 1, nameField);
+				grid.setText(0, 0, "Model #:");
+				grid.setWidget(0, 1, modelField);
 
-				grid.setText(1, 0, "Model #:");
-				grid.setWidget(1, 1, modelField);
-
-				grid.setText(2, 0, "Asset Type:");
-				grid.setWidget(2, 1, assetTypeField);
+				grid.setText(1, 0, "Asset Type:");
+				grid.setWidget(1, 1, assetTypeField);
 
 				toggleSupplierField(grid, true);
 
 				Button saveBtn = new Button("Save");
-				grid.setWidget(4, 1, saveBtn);
+				grid.setWidget(3, 1, saveBtn);
 
-				grid.getCellFormatter().getElement(4, 1).getStyle().setProperty("textAlign", "right");
+				grid.getCellFormatter().getElement(3, 1).getStyle().setProperty("textAlign", "right");
 
 				vpanel.add(h1panel);
 				vpanel.add(grid);
@@ -466,9 +466,9 @@ public class TagBuilderPage {
 			});
 			addSupplierBtn.getElement().getStyle().setMarginLeft(5, Unit.PX);
 
-			grid.setText(3, 0, "Supplier Master:");
-			grid.setWidget(3, 1, supplierField);
-			grid.setWidget(3, 2, addSupplierBtn);
+			grid.setText(2, 0, "Supplier Master:");
+			grid.setWidget(2, 1, supplierField);
+			grid.setWidget(2, 2, addSupplierBtn);
 		} else {
 			TextBox supplierNameField = new TextBox();
 			supplierNameField.setStyleName("inputFieldStyle");
@@ -485,9 +485,9 @@ public class TagBuilderPage {
 
 			backBtn.getElement().getStyle().setMarginLeft(5, Unit.PX);
 
-			grid.setText(3, 0, "Supplier Name:");
-			grid.setWidget(3, 1, supplierNameField);
-			grid.setWidget(3, 2, backBtn);
+			grid.setText(2, 0, "Supplier Name:");
+			grid.setWidget(2, 1, supplierNameField);
+			grid.setWidget(2, 2, backBtn);
 		}
 	}
 
@@ -894,7 +894,7 @@ public class TagBuilderPage {
 				@Override
 				public void onSuccess(List<AssetDTO> assetDTOs) {
 					renderTree(assetDTOs, tree);
-					Window.alert(assetDTOs.size() + "");
+//					Window.alert(assetDTOs.size() + "");
 				}
 
 			});

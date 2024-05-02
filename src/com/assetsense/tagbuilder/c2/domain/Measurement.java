@@ -12,6 +12,10 @@ public class Measurement  implements Serializable{
 	private String unitid;
 	private String name;
 	
+	public Measurement(){
+		
+	}
+	
 	public long getId() {
 		return id;
 	}

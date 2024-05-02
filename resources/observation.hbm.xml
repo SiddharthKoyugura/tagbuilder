@@ -10,9 +10,12 @@
 		</id>
 
 		<property name="code" column="code" not-null="false" unique="true" type="string"></property>
-		<property name="inputType" column="inputType" not-null="false" type="string"></property>
+		<!--<property name="inputType" column="inputType" not-null="false" type="string"></property>-->
+		<many-to-one name="inputType" column="inputType" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" />
 		<property name="description" column="description" not-null="false" type="string"></property>
 		<many-to-one name="category" column="category" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" />
-		
+		<many-to-one name="measurement" column="measurement" class="com.assetsense.tagbuilder.c2.domain.Measurement" not-null="false" />
+		<many-to-one name="unitid" column="unitid" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" />
 	</class>
+	
 </hibernate-mapping>

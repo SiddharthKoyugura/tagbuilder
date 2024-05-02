@@ -10,9 +10,11 @@ public class Observation implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private long id;
 	private String code;
-	private String inputType;
+	private Lookup inputType;
 	private String description;
 	private Lookup category;
+	private Lookup measurement;
+	private Lookup unitid;
 
 	public long getId() {
 		return id;
@@ -30,24 +32,8 @@ public class Observation implements Serializable {
 		this.code = code;
 	}
 
-	public String getFormType() {
-		return inputType;
-	}
-
-	public void setFormType(String inputType) {
-		this.inputType = inputType;
-	}
-
 	public String getDescription() {
 		return description;
-	}
-
-	public String getInputType() {
-		return inputType;
-	}
-
-	public void setInputType(String inputType) {
-		this.inputType = inputType;
 	}
 
 	public Lookup getCategory() {
@@ -60,6 +46,30 @@ public class Observation implements Serializable {
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public Lookup getInputType() {
+		return inputType;
+	}
+
+	public void setInputType(Lookup inputType) {
+		this.inputType = inputType;
+	}
+
+	public Lookup getMeasurement() {
+		return measurement;
+	}
+
+	public void setMeasurement(Lookup measurement) {
+		this.measurement = measurement;
+	}
+
+	public Lookup getUnitid() {
+		return unitid;
+	}
+
+	public void setUnitid(Lookup unitid) {
+		this.unitid = unitid;
 	}
 
 }

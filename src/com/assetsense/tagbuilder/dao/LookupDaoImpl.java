@@ -11,6 +11,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import com.assetsense.tagbuilder.c2.domain.Lookup;
+import com.assetsense.tagbuilder.c2.domain.Measurement;
 
 public class LookupDaoImpl implements LookupDao{
 
@@ -65,6 +66,31 @@ public class LookupDaoImpl implements LookupDao{
 		
 		return lookup;
 	
+	}
+	
+	@Override
+	public List<Measurement> getMeasurements() {
+		Transaction tx = null;
+		Session session = sessionFactory.openSession();
+		List<Measurement> measurement = null;
+		try {
+			tx = session.beginTransaction();
+			Logger.info("transactionbegin");
+			 Query<Measurement> query = session.createQuery("FROM Measurement", Measurement.class);
+			 measurement = query.getResultList();
+			tx.commit();
+			Logger.info("transcation completed");
+		} catch (HibernateException e) {
+			if (tx != null) {
+				tx.rollback();
+			}
+			e.printStackTrace();
+		} finally {
+			session.close();
+		}
+		Logger.info("end of save Asset");
+		
+		return measurement;
 	}
 
 	public SessionFactory getSessionFactory() {

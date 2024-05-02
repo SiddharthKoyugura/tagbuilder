@@ -1,21 +1,27 @@
 package com.assetsense.tagbuilder.c2.domain;
 
-public class Lookup {
+import java.io.Serializable;
 
-	private int id;
-	private int categoryId ;
+public class Lookup implements Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	private long id;
+	private String categoryId ;
 	private String name;
 	
-	public int getId() {
+	public long getId() {
 		return id;
 	}
-	public void setId(int id) {
+	public void setId(long id) {
 		this.id = id;
 	}
-	public int getCategoryId() {
+	public String getCategoryId() {
 		return categoryId;
 	}
-	public void setCategoryId(int categoryId) {
+	public void setCategoryId(String categoryId) {
 		this.categoryId = categoryId;
 	}
 	public String getName() {

@@ -13,17 +13,18 @@
 		<many-to-one name="model" column="model" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" />
 		<property name="location" column="location" not-null="false" type="string"></property>
 		<property name="category" column="category" not-null="false" type="string"></property>
+		<property name="isCompleted" column="is_completed" not-null="true" type="boolean"></property>
 		<many-to-one name="assettype" column="assettype" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" />
 		<many-to-one name="supplierName" column="supplierName" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" />
 		
 		<list name="childAssets" cascade="all">
-		    <key column="parent_id" not-null="true" />
+		    <key column="parent_id" not-null="false" />
 		    <index column="child_index" />
 		    <one-to-many class="com.assetsense.tagbuilder.c2.domain.Asset" />
 		</list>
 		<list name="observations" cascade="all">
-		    <key column="parent_id" not-null="true" />
-		    <index column="child_index" />
+		    <key column="assetId" not-null="false" />
+		    <index column="asset_index" />
 		    <one-to-many class="com.assetsense.tagbuilder.c2.domain.Observation" />
 		</list>
 	</class>

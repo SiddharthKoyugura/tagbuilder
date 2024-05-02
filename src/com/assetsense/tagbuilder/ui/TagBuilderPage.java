@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Map;
 
 import com.assetsense.tagbuilder.c2.domain.Asset;
+import com.assetsense.tagbuilder.c2.domain.Observation;
+import com.assetsense.tagbuilder.dto.AssetDTO;
+import com.assetsense.tagbuilder.dto.ObservationDTO;
 import com.assetsense.tagbuilder.service.AssetService;
 import com.assetsense.tagbuilder.service.AssetServiceAsync;
 import com.assetsense.tagbuilder.utils.JsUtil;
@@ -44,6 +47,7 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 public class TagBuilderPage {
 
 	private final AssetServiceAsync assetService = GWT.create(AssetService.class);
+	// private final TagServiceAsync tagService = GWT.create(TagService.class);
 
 	private final JsUtil jsUtil = new JsUtil();
 
@@ -58,7 +62,7 @@ public class TagBuilderPage {
 
 	private int selectedAssetRow = 0;
 
-	private Map<Integer, JavaScriptObject> rowMap = new HashMap<Integer, JavaScriptObject>();
+	private Map<Integer, List<ObservationDTO>> rowMap = new HashMap<Integer, List<ObservationDTO>>();
 
 	public void loadTagBuilderPage() {
 		RootLayoutPanel.get().clear();
@@ -165,15 +169,15 @@ public class TagBuilderPage {
 			@Override
 			public void onSuccess(String result) {
 				// renderTree(getElements(result), tree);
-				getElements(result, tree);
+				getAssets(result, tree);
 			}
 		});
 
 		return tree;
 	}
 
-	private void renderTree(List<Asset> assets, Tree tree) {
-		for (final Asset asset : assets) {
+	private void renderTree(List<AssetDTO> assets, Tree tree) {
+		for (final AssetDTO asset : assets) {
 			Label label = new Label(asset.getName());
 			TreeItem item = new TreeItem(label);
 
@@ -195,8 +199,8 @@ public class TagBuilderPage {
 		}
 	}
 
-	private void renderChildren(TreeItem parentItem, List<Asset> children) {
-		for (final Asset child : children) {
+	private void renderChildren(TreeItem parentItem, List<AssetDTO> children) {
+		for (final AssetDTO child : children) {
 			Label label = new Label(child.getName());
 			TreeItem childItem = new TreeItem(label);
 
@@ -218,67 +222,111 @@ public class TagBuilderPage {
 		}
 	}
 
-	private void updateTables(String elementId) {
-		jsUtil.sendMessageToServer("{\"request\":\"element\", \"id\":\"" + elementId + "\"}",
-				new AsyncCallback<String>() {
-					@Override
-					public void onFailure(Throwable caught) {
-						// Handle failure
-					}
+	private void updateTables(String assetId) {
+		assetService.getAssetById(assetId, new AsyncCallback<AssetDTO>() {
 
-					@Override
-					public void onSuccess(String data) {
-						int row = getTableLastRow(assetTable);
+			@Override
+			public void onFailure(Throwable caught) {
+				// TODO Auto-generated method stub
 
-						JavaScriptObject dataArray = JsonUtils.safeEval(data);
-						JavaScriptObject elementObject = jsUtil.getArrayElement(dataArray, 0);
+			}
 
-						assetTable.setText(row, 0, "NULL");
-						assetTable.setText(row, 1, jsUtil.getValueAsString(elementObject, "Name"));
-						assetTable.setWidget(row, 2, getModelField());
-						assetTable.setText(row, 3, "NULL");
+			@Override
+			public void onSuccess(AssetDTO asset) {
+				int row = getTableLastRow(assetTable);
 
-						setCursorPointer(assetTable, row);
+				// JavaScriptObject dataArray = JsonUtils.safeEval(data);
+				// JavaScriptObject elementObject =
+				// jsUtil.getArrayElement(dataArray, 0);
 
-						JavaScriptObject attributeArray = jsUtil.getObjectProperty(elementObject, "Attributes");
-						updateObsAndTagTable(attributeArray);
-						rowMap.put(row, attributeArray);
+				assetTable.setText(row, 0, "NULL");
+				assetTable.setText(row, 1, asset.getName());
+				assetTable.setWidget(row, 2, getModelField());
+				assetTable.setText(row, 3, "NULL");
 
-						if (selectedTable == assetTable) {
-							selectedTable.getRowFormatter().removeStyleName(selectedAssetRow, "selectedRow");
-						}
+				setCursorPointer(assetTable, row);
 
-						selectedAssetRow = row;
+				// JavaScriptObject attributeArray =
+				// jsUtil.getObjectProperty(elementObject, "Attributes");
+				// updateObsAndTagTable(attributeArray);
+				rowMap.put(row, asset.getObservations());
+				updateObsAndTagTable(asset.getObservations());
 
-						selectedTable = assetTable;
-						selectedRow = row;
+				if (selectedTable == assetTable) {
+					selectedTable.getRowFormatter().removeStyleName(selectedAssetRow, "selectedRow");
+				}
 
-						resetTableStates();
-					}
-				});
+				selectedAssetRow = row;
+
+				selectedTable = assetTable;
+				selectedRow = row;
+
+				resetTableStates();
+			}
+
+		});
+		// jsUtil.sendMessageToServer("{\"request\":\"element\", \"id\":\"" +
+		// assetId + "\"}",
+		// new AsyncCallback<String>() {
+		// @Override
+		// public void onFailure(Throwable caught) {
+		// // Handle failure
+		// }
+		//
+		// @Override
+		// public void onSuccess(String data) {
+		// int row = getTableLastRow(assetTable);
+		//
+		// JavaScriptObject dataArray = JsonUtils.safeEval(data);
+		// JavaScriptObject elementObject = jsUtil.getArrayElement(dataArray,
+		// 0);
+		//
+		// assetTable.setText(row, 0, "NULL");
+		// assetTable.setText(row, 1, jsUtil.getValueAsString(elementObject,
+		// "Name"));
+		// assetTable.setWidget(row, 2, getModelField());
+		// assetTable.setText(row, 3, "NULL");
+		//
+		// setCursorPointer(assetTable, row);
+		//
+		// JavaScriptObject attributeArray =
+		// jsUtil.getObjectProperty(elementObject, "Attributes");
+		// updateObsAndTagTable(attributeArray);
+		// rowMap.put(row, attributeArray);
+		//
+		// if (selectedTable == assetTable) {
+		// selectedTable.getRowFormatter().removeStyleName(selectedAssetRow,
+		// "selectedRow");
+		// }
+		//
+		// selectedAssetRow = row;
+		//
+		// selectedTable = assetTable;
+		// selectedRow = row;
+		//
+		// resetTableStates();
+		// }
+		// });
 
 	}
 
-	private void updateObsAndTagTable(JavaScriptObject attributeArray) {
+	private void updateObsAndTagTable(List<ObservationDTO> observations) {
 		resetTable(obsTable);
 		resetTable(tagTable);
 		int row = getTableLastRow(obsTable);
-		if (attributeArray != null && jsUtil.isArray(attributeArray)) {
-			for (int i = 0; i < jsUtil.getArrayLength(attributeArray); i++) {
-				JavaScriptObject attribute = jsUtil.getArrayElement(attributeArray, i);
-				String description = jsUtil.getValueAsString(attribute, "Description");
-				obsTable.setText(row, 0, "NULL");
-				obsTable.setText(row, 1, description.trim().length() > 0 ? description.trim() : "NULL");
-				obsTable.setText(row, 2, "NULL");
-				setCursorPointer(obsTable, row);
+		for (ObservationDTO observation : observations) {
+			String description = observation.getDescription();
+			obsTable.setText(row, 0, "NULL");
+			obsTable.setText(row, 1, description.trim().length() > 0 ? description.trim() : "NULL");
+			obsTable.setText(row, 2, "NULL");
+			setCursorPointer(obsTable, row);
 
-				tagTable.setText(row, 0, "NULL");
-				tagTable.setText(row, 1, "NULL");
-				tagTable.setText(row, 2, "NULL");
-				setCursorPointer(tagTable, row);
+			tagTable.setText(row, 0, "NULL");
+			tagTable.setText(row, 1, "NULL");
+			tagTable.setText(row, 2, "NULL");
+			setCursorPointer(tagTable, row);
 
-				row++;
-			}
+			row++;
 		}
 	}
 
@@ -731,7 +779,7 @@ public class TagBuilderPage {
 		if (table == assetTable && selectedAssetRow != row) {
 			updateObsAndTagTable(rowMap.get(row));
 			selectedAssetRow = row;
-		}
+		} // drag and drop completed
 	}
 
 	private void convertRowToEditable() {
@@ -829,28 +877,26 @@ public class TagBuilderPage {
 		}
 	}
 
-	private void getElements(String data, final Tree tree) {
+	private void getAssets(String data, final Tree tree) {
 
 		if (data != null) {
 			JavaScriptObject jsArray = JsonUtils.safeEval(data);
 
-			final List<Asset> assets = getAssetHierrarchy(jsArray);
-			
-			assetService.saveAsset(assets.get(0), new AsyncCallback<Void>(){
+			List<Asset> assets = getAssetHierrarchy(jsArray);
+
+			assetService.saveAssets(assets, new AsyncCallback<List<AssetDTO>>() {
 
 				@Override
 				public void onFailure(Throwable caught) {
 					// TODO Auto-generated method stub
-					Window.alert("hey");
 				}
 
 				@Override
-				public void onSuccess(Void result) {
-					// TODO Auto-generated method stub
-					Window.alert("Hello");
-					renderTree(assets, tree);
+				public void onSuccess(List<AssetDTO> assetDTOs) {
+					renderTree(assetDTOs, tree);
+					Window.alert(assetDTOs.size() + "");
 				}
-				
+
 			});
 		}
 	}
@@ -859,25 +905,36 @@ public class TagBuilderPage {
 		List<Asset> assets = new ArrayList<>();
 
 		for (int i = 0; i < jsUtil.getArrayLength(assetArray); i++) {
-			JavaScriptObject elementObject = jsUtil.getArrayElement(assetArray, i);
+			JavaScriptObject assetObject = jsUtil.getArrayElement(assetArray, i);
 
 			Asset asset = new Asset();
-			String name = jsUtil.getValueAsString(elementObject, "Name");
-			String id = jsUtil.getValueAsString(elementObject, "ID");
+			String name = jsUtil.getValueAsString(assetObject, "Name");
+			String id = jsUtil.getValueAsString(assetObject, "ID");
 
 			asset.setId(id);
 			asset.setName(name);
-			
 
-			JavaScriptObject childAssetsArray = jsUtil.getObjectProperty(elementObject, "Elements");
+			List<Observation> observations = new ArrayList<>();
+
+			JavaScriptObject observationArray = jsUtil.getObjectProperty(assetObject, "Attributes");
+
+			for (int j = 0; j < jsUtil.getArrayLength(observationArray); j++) {
+				JavaScriptObject observationObject = jsUtil.getArrayElement(observationArray, j);
+				Observation observation = new Observation();
+				observation.setDescription(jsUtil.getValueAsString(observationObject, "Description"));
+				observations.add(observation);
+			}
+
+			asset.setObservations(observations);
+
+			JavaScriptObject childAssetsArray = jsUtil.getObjectProperty(assetObject, "Elements");
 			if (childAssetsArray != null && jsUtil.isArray(childAssetsArray)) {
 				List<Asset> childAssets = getAssetHierrarchy(childAssetsArray);
 				asset.setChildAssets(childAssets);
 			}
-			
+
 			assets.add(asset);
 		}
-
 		return assets;
 	}
 

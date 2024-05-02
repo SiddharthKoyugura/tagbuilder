@@ -1,15 +1,12 @@
-package com.assetsense.tagbuilder.c2.domain;
+package com.assetsense.tagbuilder.dto;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Asset implements Serializable {
+import com.assetsense.tagbuilder.c2.domain.Lookup;
 
-	/**
-	 *
-	 */
-
+public class AssetDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String id;
 	private String name;
@@ -20,13 +17,10 @@ public class Asset implements Serializable {
 	private Lookup supplierName;
 
 	private String category;
-	private List<Asset> childAssets = new ArrayList<>();
-	private List<Observation> observations = new ArrayList<>();
+	private List<AssetDTO> childAssets = new ArrayList<>();
+	private List<ObservationDTO> observations = new ArrayList<>();
 
 	private Boolean isCompleted = false;
-
-	public Asset() {
-	}
 
 	public String getId() {
 		return id;
@@ -36,16 +30,16 @@ public class Asset implements Serializable {
 		this.id = id;
 	}
 
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public String getEcn() {
 		return ecn;
-	}
-
-	public List<Observation> getObservations() {
-		return observations;
-	}
-
-	public void setObservations(List<Observation> observations) {
-		this.observations = observations;
 	}
 
 	public void setEcn(String ecn) {
@@ -68,38 +62,6 @@ public class Asset implements Serializable {
 		this.location = location;
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getCategory() {
-		return category;
-	}
-
-	public void setCategory(String category) {
-		this.category = category;
-	}
-
-	public List<Asset> getChildAssets() {
-		return childAssets;
-	}
-
-	public void setChildAssets(List<Asset> childAssets) {
-		this.childAssets = childAssets;
-	}
-
-	public List<Observation> getAttribute() {
-		return observations;
-	}
-
-	public void setAttribute(List<Observation> observations) {
-		this.observations = observations;
-	}
-
 	public Lookup getAssettype() {
 		return assettype;
 	}
@@ -114,6 +76,30 @@ public class Asset implements Serializable {
 
 	public void setSupplierName(Lookup supplierName) {
 		this.supplierName = supplierName;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public List<AssetDTO> getChildAssets() {
+		return childAssets;
+	}
+
+	public void setChildAssets(List<AssetDTO> childAssets) {
+		this.childAssets = childAssets;
+	}
+
+	public List<ObservationDTO> getObservations() {
+		return observations;
+	}
+
+	public void setObservations(List<ObservationDTO> observations) {
+		this.observations = observations;
 	}
 
 	public Boolean getIsCompleted() {

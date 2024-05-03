@@ -12,4 +12,5 @@ public interface AssetService extends RemoteService{
 	void saveAsset(Asset asset);
 	List<AssetDTO> saveAssets(List<Asset> assets);
 	AssetDTO getAssetById(String id);
+	AssetDTO getAssetByName(String name);
 }

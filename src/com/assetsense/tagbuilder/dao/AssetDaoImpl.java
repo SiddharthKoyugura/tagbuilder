@@ -37,7 +37,11 @@ public class AssetDaoImpl implements AssetDao {
 		try {
 			tx = session.beginTransaction();
 			Logger.info("transactionbegin");
-			session.save(asset);
+			if (!isIdUnique(session, asset.getId())) {
+				session.update(asset);
+			} else {
+				session.save(asset);
+			}
 			tx.commit();
 			Logger.info("transcation completed");
 		} catch (HibernateException e) {
@@ -119,6 +123,33 @@ public class AssetDaoImpl implements AssetDao {
 		query.setParameter("id", id);
 		Long count = query.uniqueResult();
 		return count == 0; // ID is unique if count is 0
+	}
+
+	@Override
+	public AssetDTO getAssetByName(String name) {
+		AssetDTO asset = null;
+		Transaction tx = null;
+		Session session = sessionFactory.openSession();
+		try {
+			tx = session.beginTransaction();
+			Logger.info("transactionbegin");
+			Query<Asset> query = session.createQuery("FROM Asset Where name=:name", Asset.class);
+			query.setParameter("name", name);
+			Asset assetInDB = query.getResultList().get(0);
+			asset = typeConverter.convertToAssetDTO(assetInDB);
+			tx.commit();
+			Logger.info("transcation completed");
+		} catch (HibernateException e) {
+			if (tx != null) {
+				tx.rollback();
+			}
+			e.printStackTrace();
+		} finally {
+			session.close();
+		}
+		Logger.info("end of save Asset");
+		return asset;
+
 	}
 
 }

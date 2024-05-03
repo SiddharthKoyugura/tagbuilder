@@ -39,4 +39,10 @@ public class AssetServiceImpl extends RemoteServiceServlet implements AssetServi
 		return assetDao.getAssetById(id);
 	}
 
+	@Override
+	public AssetDTO getAssetByName(String name) {
+		assetDao = (AssetDaoImpl) ApplicationContextListener.applicationContext.getBean("assetDaoImpl");
+		return assetDao.getAssetByName(name);
+	}
+
 }

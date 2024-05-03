@@ -9,8 +9,13 @@ public interface LookupDao {
 
 	List<Lookup> getLookups();
 
-	Lookup getLookupByCategory(String category);
+	List<Lookup> getLookupByCategory(String category);
 
 	List<Measurement> getMeasurements();
 
+	void saveLookup(Lookup lookup);
+	
+	Lookup getLookupByName(String name);
+	
+	List<Lookup> getLookupByMeasurementName(String measurement);
 }

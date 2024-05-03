@@ -52,6 +52,8 @@ public class TypeConverter {
 		obsDTO.setInputType(observation.getInputType());
 		obsDTO.setDescription(observation.getDescription());
 		obsDTO.setCategory(observation.getCategory());
+		obsDTO.setMeasurement(observation.getMeasurement());
+		obsDTO.setUnitid(observation.getUnitid());
 		
 		return obsDTO;
 	}
@@ -66,5 +68,54 @@ public class TypeConverter {
 		tagDTO.setObservation(convertToObservationDTO(tag.getObservation()));
 		
 		return tagDTO;
+	}
+	
+	public Asset convertToAsset(AssetDTO assetDTO){
+		Asset asset = new Asset();
+        asset.setId(assetDTO.getId());
+        asset.setName(assetDTO.getName());
+        asset.setEcn(assetDTO.getEcn());
+        asset.setLocation(assetDTO.getLocation());
+        asset.setCategory(assetDTO.getCategory());
+        asset.setIsCompleted(assetDTO.getIsCompleted());
+
+        Lookup model = assetDTO.getModel();
+        if (model != null) {
+            asset.setModel(model);
+        }
+
+        Lookup assettype = assetDTO.getAssettype();
+        if (assettype != null) {
+            asset.setAssettype(assettype);
+        }
+
+        Lookup supplierName = assetDTO.getSupplierName();
+        if (supplierName != null) {
+            asset.setSupplierName(supplierName);
+        }
+
+        for (AssetDTO childAsset : assetDTO.getChildAssets()) {
+        	asset.getChildAssets().add(convertToAsset(childAsset));
+        }
+
+        for (ObservationDTO observation : assetDTO.getObservations()) {
+            asset.getObservations().add(convertToObservation(observation));
+        }
+
+        return asset;
+	}
+	
+	public Observation convertToObservation(ObservationDTO observationDTO){
+		Observation observation = new Observation();
+		
+		observation.setId(observationDTO.getId());
+		observation.setCode(observationDTO.getCode());
+		observation.setInputType(observationDTO.getInputType());
+		observation.setDescription(observationDTO.getDescription());
+		observation.setCategory(observationDTO.getCategory());
+		observation.setMeasurement(observationDTO.getMeasurement());
+		observation.setUnitid(observationDTO.getUnitid());
+		
+		return observation;
 	}
 }

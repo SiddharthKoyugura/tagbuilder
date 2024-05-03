@@ -10,4 +10,5 @@ public interface AssetDao {
 	public void saveAsset(Asset asset);
 	public List<AssetDTO> saveAssets(List<Asset> assets);
 	public AssetDTO getAssetById(String id);
+	public AssetDTO getAssetByName(String name);
 }

@@ -13,7 +13,7 @@ public class Observation implements Serializable {
 	private Lookup inputType;
 	private String description;
 	private Lookup category;
-	private Lookup measurement;
+	private Measurement measurement;
 	private Lookup unitid;
 
 	public long getId() {
@@ -56,11 +56,11 @@ public class Observation implements Serializable {
 		this.inputType = inputType;
 	}
 
-	public Lookup getMeasurement() {
+	public Measurement getMeasurement() {
 		return measurement;
 	}
 
-	public void setMeasurement(Lookup measurement) {
+	public void setMeasurement(Measurement measurement) {
 		this.measurement = measurement;
 	}
 

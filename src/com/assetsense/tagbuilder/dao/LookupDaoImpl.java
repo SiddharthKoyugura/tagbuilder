@@ -134,7 +134,9 @@ public class LookupDaoImpl implements LookupDao {
 			tx = session.beginTransaction();
 			Query<Lookup> query = (Query<Lookup>) session.createQuery("from Lookup where name=:name", Lookup.class);
 			query.setParameter("name", name);
-			lookup = query.getResultList().get(0);
+			if (query.getResultList().size() > 0) {
+				lookup = query.getResultList().get(0);
+			}
 			tx.commit();
 		} catch (HibernateException e) {
 			if (tx != null) {
@@ -154,14 +156,15 @@ public class LookupDaoImpl implements LookupDao {
 		List<Lookup> lookups = new ArrayList<>();
 		try {
 			tx = session.beginTransaction();
-			Query<Measurement> query = (Query<Measurement>) session.createQuery("from Measurement where name=:name", Measurement.class);
+			Query<Measurement> query = (Query<Measurement>) session.createQuery("from Measurement where name=:name",
+					Measurement.class);
 			query.setParameter("name", measurement);
 			Measurement measure = query.getResultList().get(0);
-			
+
 			Query<Lookup> lookupQuery = session.createQuery("FROM Lookup where category_id=:category", Lookup.class);
 			lookupQuery.setParameter("category", measure.getUnitid());
 			lookups = lookupQuery.getResultList();
-			
+
 			tx.commit();
 		} catch (HibernateException e) {
 			if (tx != null) {

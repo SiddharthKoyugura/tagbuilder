@@ -1,0 +1,27 @@
+@FinalFields, false
+com.assetsense.tagbuilder.c2.domain.Asset, false, false, true, true, com.assetsense.tagbuilder.c2.domain.Asset/3890028766, 3890028766
+[Lcom.assetsense.tagbuilder.c2.domain.Asset;, false, false, true, true, [Lcom.assetsense.tagbuilder.c2.domain.Asset;/1800279711, 1800279711
+com.assetsense.tagbuilder.c2.domain.Lookup, true, true, true, true, com.assetsense.tagbuilder.c2.domain.Lookup/3606874409, 3606874409
+com.assetsense.tagbuilder.c2.domain.Measurement, true, true, true, true, com.assetsense.tagbuilder.c2.domain.Measurement/3762856688, 3762856688
+com.assetsense.tagbuilder.c2.domain.Observation, false, false, true, true, com.assetsense.tagbuilder.c2.domain.Observation/3634492222, 3634492222
+[Lcom.assetsense.tagbuilder.c2.domain.Observation;, false, false, true, true, [Lcom.assetsense.tagbuilder.c2.domain.Observation;/1327404379, 1327404379
+com.assetsense.tagbuilder.dto.AssetDTO, true, true, false, false, com.assetsense.tagbuilder.dto.AssetDTO/2428378222, 2428378222
+[Lcom.assetsense.tagbuilder.dto.AssetDTO;, true, true, false, false, [Lcom.assetsense.tagbuilder.dto.AssetDTO;/2838811007, 2838811007
+com.assetsense.tagbuilder.dto.ObservationDTO, true, true, false, false, com.assetsense.tagbuilder.dto.ObservationDTO/4191910978, 4191910978
+[Lcom.assetsense.tagbuilder.dto.ObservationDTO;, true, true, false, false, [Lcom.assetsense.tagbuilder.dto.ObservationDTO;/10048228, 10048228
+com.assetsense.tagbuilder.service.AssetService, false, false, false, false, _, 252888980
+com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException, true, true, true, true, com.google.gwt.user.client.rpc.IncompatibleRemoteServiceException/3936916533, 3936916533
+com.google.gwt.user.client.rpc.RpcTokenException, true, true, false, false, com.google.gwt.user.client.rpc.RpcTokenException/2345075298, 2345075298
+com.google.gwt.user.client.rpc.XsrfToken, false, false, true, true, com.google.gwt.user.client.rpc.XsrfToken/4254043109, 4254043109
+java.lang.Boolean, true, true, true, true, java.lang.Boolean/476441737, 476441737
+java.lang.Exception, true, false, true, false, java.lang.Exception/1920171873, 1920171873
+java.lang.RuntimeException, true, false, true, false, java.lang.RuntimeException/515124647, 515124647
+java.lang.String, true, true, true, true, java.lang.String/2004016611, 2004016611
+java.lang.Throwable, true, false, true, false, java.lang.Throwable/2953622131, 2953622131
+java.util.ArrayList, true, true, true, true, java.util.ArrayList/4159755760, 4159755760
+java.util.Arrays$ArrayList, true, true, true, true, java.util.Arrays$ArrayList/2507071751, 2507071751
+java.util.Collections$EmptyList, true, true, true, true, java.util.Collections$EmptyList/4157118744, 4157118744
+java.util.Collections$SingletonList, true, true, true, true, java.util.Collections$SingletonList/1586180994, 1586180994
+java.util.LinkedList, true, true, true, true, java.util.LinkedList/3953877921, 3953877921
+java.util.Stack, true, true, true, true, java.util.Stack/1346942793, 1346942793
+java.util.Vector, true, true, true, true, java.util.Vector/3057315478, 3057315478

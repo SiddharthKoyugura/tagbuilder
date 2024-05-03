@@ -3,6 +3,7 @@ package com.assetsense.tagbuilder.dto;
 import java.io.Serializable;
 
 import com.assetsense.tagbuilder.c2.domain.Lookup;
+import com.assetsense.tagbuilder.c2.domain.Measurement;
 
 public class ObservationDTO implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -11,7 +12,7 @@ public class ObservationDTO implements Serializable {
 	private Lookup inputType;
 	private String description;
 	private Lookup category;
-	private Lookup measurement;
+	private Measurement measurement;
 	private Lookup unitid;
 
 	public long getId() {
@@ -54,11 +55,11 @@ public class ObservationDTO implements Serializable {
 		this.category = category;
 	}
 
-	public Lookup getMeasurement() {
+	public Measurement getMeasurement() {
 		return measurement;
 	}
 
-	public void setMeasurement(Lookup measurement) {
+	public void setMeasurement(Measurement measurement) {
 		this.measurement = measurement;
 	}
 

@@ -10,6 +10,7 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("asset")
 public interface AssetService extends RemoteService{
 	void saveAsset(Asset asset);
+	void updateAsset(Asset asset);
 	List<AssetDTO> saveAssets(List<Asset> assets);
 	AssetDTO getAssetById(String id);
 	AssetDTO getAssetByName(String name);

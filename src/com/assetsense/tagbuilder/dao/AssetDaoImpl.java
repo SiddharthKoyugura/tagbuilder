@@ -56,6 +56,27 @@ public class AssetDaoImpl implements AssetDao {
 	}
 
 	@Override
+	public void updateAsset(Asset asset) {
+		Transaction tx = null;
+		Session session = sessionFactory.openSession();
+		try {
+			tx = session.beginTransaction();
+			Logger.info("transactionbegin");
+			session.update(asset);
+			tx.commit();
+			Logger.info("transcation completed");
+		} catch (HibernateException e) {
+			if (tx != null) {
+				tx.rollback();
+			}
+			e.printStackTrace();
+		} finally {
+			session.close();
+		}
+		Logger.info("end of save Asset");
+	}
+
+	@Override
 	public List<AssetDTO> saveAssets(List<Asset> assets) {
 		List<AssetDTO> assetDTOs = new ArrayList<>();
 		Transaction tx = null;

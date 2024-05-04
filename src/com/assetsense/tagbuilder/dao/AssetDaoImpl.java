@@ -173,4 +173,32 @@ public class AssetDaoImpl implements AssetDao {
 
 	}
 
+	@Override
+	public List<AssetDTO> getParentAssets() {
+		List<AssetDTO> assetDTOs = new ArrayList<>();
+		Transaction tx = null;
+		Session session = sessionFactory.openSession();
+		try {
+			tx = session.beginTransaction();
+			Logger.info("transactionbegin");
+			Query<Asset> query = session.createQuery("from Asset where is_completed=false AND parent_id IS NULL",
+					Asset.class);
+			List<Asset> assetsInDb = query.getResultList();
+			for (Asset asset : assetsInDb) {
+				assetDTOs.add(typeConverter.convertToAssetDTO(asset));
+			}
+			tx.commit();
+			Logger.info("transcation completed");
+		} catch (HibernateException e) {
+			if (tx != null) {
+				tx.rollback();
+			}
+			e.printStackTrace();
+		} finally {
+			session.close();
+		}
+		Logger.info("end of get Assets");
+		return assetDTOs;
+	}
+
 }

@@ -14,7 +14,7 @@
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/ws/8.5.0/ws.min.js"></script>
   <script>
-    const ws = new WebSocket("ws://192.168.0.103:8000/");
+    const ws = new WebSocket("ws://192.168.0.104:8000/");
 
     var callback;
 
@@ -37,7 +37,11 @@
       callback = cb;
       elementsData = null;
       console.log(message);
-      ws.send(message);
+      try{
+        ws.send(message);
+      }catch {
+        callback(null);
+      }
     }
   </script>
 </html>

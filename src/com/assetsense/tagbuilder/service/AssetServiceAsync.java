@@ -12,4 +12,5 @@ public interface AssetServiceAsync {
 	void saveAssets(List<Asset> assets, AsyncCallback<List<AssetDTO>> callback);
 	void getAssetById(String id, AsyncCallback<AssetDTO> callback);
 	void getAssetByName(String name, AsyncCallback<AssetDTO> callback);
+	void getParentAssets(AsyncCallback<List<AssetDTO>> callback);
 }

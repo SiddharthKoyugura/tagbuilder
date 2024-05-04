@@ -4,17 +4,57 @@
               http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
 	version="2.5" xmlns="http://java.sun.com/xml/ns/javaee">
 
-	<!-- Servlets 
+	<!-- Servlets  -->
 	<servlet>
-		<servlet-name>migrationServlet</servlet-name>
-		<servlet-class>com.assetsense.tagbuilder.serviceImpl.MigrationServiceImpl</servlet-class>
+		<servlet-name>assetServlet</servlet-name>
+		<servlet-class>com.assetsense.tagbuilder.serviceImpl.AssetServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet-mapping>
-		<servlet-name>migrationServlet</servlet-name>
-		<url-pattern>/tagbuilder/migration</url-pattern>
-	</servlet-mapping>-->
+		<servlet-name>assetServlet</servlet-name>
+		<url-pattern>/tagbuilder/asset</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>observationServlet</servlet-name>
+		<servlet-class>com.assetsense.tagbuilder.serviceImpl.ObservationServiceImpl</servlet-class>
+	</servlet>
 
+	<servlet-mapping>
+		<servlet-name>observationServlet</servlet-name>
+		<url-pattern>/tagbuilder/observation</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>tagServlet</servlet-name>
+		<servlet-class>com.assetsense.tagbuilder.serviceImpl.TagServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>tagServlet</servlet-name>
+		<url-pattern>/tagbuilder/tag</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>lookupServlet</servlet-name>
+		<servlet-class>com.assetsense.tagbuilder.serviceImpl.LookupServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>lookupServlet</servlet-name>
+		<url-pattern>/tagbuilder/lookup</url-pattern>
+	</servlet-mapping>
+
+	
+	<servlet>
+		<servlet-name>lookupService</servlet-name>
+		<servlet-class>com.assetsense.tagbuilder.serviceImpl.LookupServiceImpl</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>lookupService</servlet-name>
+		<url-pattern>/tagbuilder/lookup</url-pattern>
+	</servlet-mapping>
 	<!-- Default page to serve -->
 	<welcome-file-list>
 		<welcome-file>Tagbuilder.html</welcome-file>

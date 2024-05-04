@@ -1,6 +1,14 @@
 package com.assetsense.tagbuilder.ui;
 
+import java.util.List;
+
+import com.assetsense.tagbuilder.c2.domain.Lookup;
+import com.assetsense.tagbuilder.service.LookupService;
+import com.assetsense.tagbuilder.service.LookupServiceAsync;
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.user.client.Window;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -11,6 +19,24 @@ public class Tagbuilder implements EntryPoint {
 
 	public void onModuleLoad() {
 		tagBuilderPage.loadTagBuilderPage();
-	}
 
+//		LookupServiceAsync lookupService = GWT.create(LookupService.class);
+//
+//		lookupService.getLookups(new AsyncCallback<List<Lookup>>() {
+//
+//			@Override
+//			public void onFailure(Throwable caught) {
+//				Window.alert("onfailure");
+//
+//			}
+//
+//			@Override
+//			public void onSuccess(List<Lookup> result) {
+//				Window.alert(result.toString());
+//
+//			}
+//
+//		});
+
+	}
 }

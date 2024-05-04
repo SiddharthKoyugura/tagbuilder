@@ -10,10 +10,11 @@ public class Observation implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private long id;
 	private String code;
-	private String formType;
-	private String functionalCat;
+	private Lookup inputType;
 	private String description;
-	private Tag tag;
+	private Lookup category;
+	private Measurement measurement;
+	private Lookup unitid;
 
 	public long getId() {
 		return id;
@@ -31,36 +32,44 @@ public class Observation implements Serializable {
 		this.code = code;
 	}
 
-	public String getFormType() {
-		return formType;
-	}
-
-	public void setFormType(String formType) {
-		this.formType = formType;
-	}
-
-	public String getFunctionalCat() {
-		return functionalCat;
-	}
-
-	public void setFunctionalCat(String functionalCat) {
-		this.functionalCat = functionalCat;
-	}
-
 	public String getDescription() {
 		return description;
 	}
 
-	public Tag getTag() {
-		return tag;
+	public Lookup getCategory() {
+		return category;
 	}
 
-	public void setTag(Tag tag) {
-		this.tag = tag;
+	public void setCategory(Lookup category) {
+		this.category = category;
 	}
 
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public Lookup getInputType() {
+		return inputType;
+	}
+
+	public void setInputType(Lookup inputType) {
+		this.inputType = inputType;
+	}
+
+	public Measurement getMeasurement() {
+		return measurement;
+	}
+
+	public void setMeasurement(Measurement measurement) {
+		this.measurement = measurement;
+	}
+
+	public Lookup getUnitid() {
+		return unitid;
+	}
+
+	public void setUnitid(Lookup unitid) {
+		this.unitid = unitid;
 	}
 
 }

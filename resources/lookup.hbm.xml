@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC  
+"-//Hibernate/Hibernate Mapping DTD 3.0//EN"  
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+
+<hibernate-mapping>
+	<class name="com.assetsense.tagbuilder.c2.domain.Lookup" table="lookup">
+		<id name="id" column="id" type="long">
+			<generator class="native"/>
+		</id>
+
+		<property name="categoryId" column="category_id" not-null="false" type="string"></property>
+		<property name="name" column="name" not-null="false" type="string"></property>
+	</class>
+</hibernate-mapping>

@@ -30,6 +30,7 @@
   <source path='c2' />
   <source path='pi' />
   <source path='utils' />
+  <source path='dto' />
 
   <!-- allow Super Dev Mode -->
   <add-linker name="xsiframe"/>

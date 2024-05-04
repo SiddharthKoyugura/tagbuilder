@@ -5,15 +5,28 @@
 
 <hibernate-mapping>
 	<class name="com.assetsense.tagbuilder.c2.domain.Asset" table="ASSET">
-		<id name="id" column="id" type="long">
-			<generator class="native"/>
+		<id name="id" column="id" type="string">
 		</id>
 
 		<property name="name" column="name" not-null="false" type="string"></property>
 		<property name="ecn" column="ecn" unique="true" not-null="false" type="string"></property>
-		<property name="model" column="model" not-null="false" type="string"></property>
+		<many-to-one name="model" column="model" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false" />
 		<property name="location" column="location" not-null="false" type="string"></property>
+		<property name="category" column="category" not-null="false" type="string"></property>
+		<property name="isCompleted" column="is_completed" not-null="true" type="boolean"></property>
+		<many-to-one name="assettype" column="assettype" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false" />
+		<many-to-one name="supplierName" column="supplierName" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false" />
 		
-		<many-to-one name="parentAsset" column="parent_asset_id" not-null="false" />
+		
+		<list name="childAssets" cascade="all">
+		    <key column="parent_id" not-null="false" />
+		    <index column="child_index" />
+		    <one-to-many class="com.assetsense.tagbuilder.c2.domain.Asset" />
+		</list>
+		<list name="observations" cascade="all">
+		    <key column="assetId" not-null="false" />
+		    <index column="asset_index" />
+		    <one-to-many class="com.assetsense.tagbuilder.c2.domain.Observation" />
+		</list>
 	</class>
 </hibernate-mapping>

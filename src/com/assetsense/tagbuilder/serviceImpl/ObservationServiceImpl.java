@@ -7,6 +7,10 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class ObservationServiceImpl extends RemoteServiceServlet implements ObservationService{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private ObservationDao observationDao;
 	
 	@Override

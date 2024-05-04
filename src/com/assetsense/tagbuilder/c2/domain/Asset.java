@@ -1,51 +1,61 @@
 package com.assetsense.tagbuilder.c2.domain;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Asset implements Serializable {
+
 	/**
-	 *
+	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private long id;
+	private String id;
 	private String name;
 	private String ecn;
-	private String model;
+	private Lookup model;
 	private String location;
-	private Asset parentAsset;
+	private Lookup assettype;
+	private Lookup supplierName;
+
+	private String category;
+	private List<Asset> childAssets = new ArrayList<>();
+	private List<Observation> observations = new ArrayList<>();
+
+	private Boolean isCompleted = false;
 
 	public Asset() {
 	}
 
-	public long getId() {
+	public String getId() {
 		return id;
 	}
 
-	public void setId(long id) {
+	public void setId(String id) {
 		this.id = id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
 	}
 
 	public String getEcn() {
 		return ecn;
 	}
 
+	public List<Observation> getObservations() {
+		return observations;
+	}
+
+	public void setObservations(List<Observation> observations) {
+		this.observations = observations;
+	}
+
 	public void setEcn(String ecn) {
 		this.ecn = ecn;
 	}
 
-	public String getModel() {
+	public Lookup getModel() {
 		return model;
 	}
 
-	public void setModel(String model) {
+	public void setModel(Lookup model) {
 		this.model = model;
 	}
 
@@ -57,12 +67,60 @@ public class Asset implements Serializable {
 		this.location = location;
 	}
 
-	public Asset getParentAsset() {
-		return parentAsset;
+	public String getName() {
+		return name;
 	}
 
-	public void setParentAsset(Asset parentAsset) {
-		this.parentAsset = parentAsset;
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
+	public List<Asset> getChildAssets() {
+		return childAssets;
+	}
+
+	public void setChildAssets(List<Asset> childAssets) {
+		this.childAssets = childAssets;
+	}
+
+	public List<Observation> getAttribute() {
+		return observations;
+	}
+
+	public void setAttribute(List<Observation> observations) {
+		this.observations = observations;
+	}
+
+	public Lookup getAssettype() {
+		return assettype;
+	}
+
+	public void setAssettype(Lookup assettype) {
+		this.assettype = assettype;
+	}
+
+	public Lookup getSupplierName() {
+		return supplierName;
+	}
+
+	public void setSupplierName(Lookup supplierName) {
+		this.supplierName = supplierName;
+	}
+
+	public Boolean getIsCompleted() {
+		return isCompleted;
+	}
+
+	public void setIsCompleted(Boolean isCompleted) {
+		this.isCompleted = isCompleted;
 	}
 
 }

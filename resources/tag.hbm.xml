@@ -10,7 +10,8 @@
 		</id>
 
 		<property name="name" column="name" not-null="false"></property>
-		
-		<many-to-one name="asset" column="parent_asset_id" not-null="false" />
+		<many-to-one name="asset" column="asset" class="com.assetsense.tagbuilder.c2.domain.Asset" not-null="false" />
+		<many-to-one name="observation" column="observation" class="com.assetsense.tagbuilder.c2.domain.Observation" not-null="false" />
+		<many-to-one name="category" column="category" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" />
 	</class>
 </hibernate-mapping>

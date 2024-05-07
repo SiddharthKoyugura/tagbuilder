@@ -39,13 +39,17 @@ public class AssetServiceImpl extends RemoteServiceServlet implements AssetServi
 	@Override
 	public Asset getAssetById(String id) {
 		assetDao = (AssetDaoImpl) ApplicationContextListener.applicationContext.getBean("assetDaoImpl");
-		return assetDao.getAssetById(id);
+		Asset asset = assetDao.getAssetById(id);
+		asset.detach();
+		return asset;
 	}
 
 	@Override
 	public Asset getAssetByName(String name) {
 		assetDao = (AssetDaoImpl) ApplicationContextListener.applicationContext.getBean("assetDaoImpl");
-		return assetDao.getAssetByName(name);
+		Asset asset = assetDao.getAssetByName(name);
+		asset.detach();
+		return asset;
 	}
 
 	@Override
@@ -57,7 +61,11 @@ public class AssetServiceImpl extends RemoteServiceServlet implements AssetServi
 	@Override
 	public List<Asset> getParentAssets() {
 		assetDao = (AssetDaoImpl) ApplicationContextListener.applicationContext.getBean("assetDaoImpl");
-		return assetDao.getParentAssets();
+		List<Asset> assets =  assetDao.getParentAssets();
+		for(Asset asset: assets){
+			asset.detach();
+		}
+		return assets;
 	}
 
 }

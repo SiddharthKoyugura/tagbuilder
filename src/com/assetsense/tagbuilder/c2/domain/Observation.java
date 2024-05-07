@@ -16,11 +16,13 @@ public class Observation extends PersistantObject implements Serializable {
 	private Measurement measurement;
 	private Lookup unitid;
 	private Tag tag;
-	
+
 	@Override
 	public void detach() {
 		super.detach();
-//		tag.detach();
+		if (tag != null) {
+			tag.detach();
+		}
 	}
 
 	public long getId() {
@@ -85,6 +87,13 @@ public class Observation extends PersistantObject implements Serializable {
 
 	public void setTag(Tag tag) {
 		this.tag = tag;
+	}
+
+	@Override
+	public String toString() {
+		return "Observation [id=" + id + ", code=" + code + ", inputType=" + inputType + ", description=" + description
+				+ ", category=" + category + ", measurement=" + measurement + ", unitid=" + unitid + ", tag=" + tag
+				+ "]";
 	}
 
 }

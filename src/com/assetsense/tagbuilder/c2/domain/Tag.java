@@ -12,15 +12,14 @@ public class Tag extends PersistantObject implements Serializable {
 	private Asset asset;
 	private Observation observation;
 	private Lookup category;
+
+	public Tag() {
+	}
 	
 //	@Override
 //	public void detach() {
 //		super.detach();
-//		observation.detach();
 //	}
-
-	public Tag() {
-	}
 
 	public long getId() {
 		return id;

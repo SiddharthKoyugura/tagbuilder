@@ -55,7 +55,6 @@ public class TagBuilderPage {
 	private final LookupServiceAsync lookupService = GWT.create(LookupService.class);
 	// private final TagServiceAsync tagService = GWT.create(TagService.class);
 
-
 	private final JsUtil jsUtil = new JsUtil();
 
 	private FlexTable assetTable;
@@ -335,7 +334,7 @@ public class TagBuilderPage {
 					descriptionField.setText(description.trim().length() > 0 ? description.trim() : "");
 
 					final ListBox inputTypeField = new ListBox();
-					if(observation.getInputType() == null){
+					if (observation.getInputType() == null) {
 						inputTypeField.addItem("<Select>");
 					}
 					inputTypeField.getElement().getStyle().setProperty("width", "100%");
@@ -364,8 +363,8 @@ public class TagBuilderPage {
 							for (Lookup inputType : inputTypes) {
 								inputTypeField.addItem(inputType.getName());
 							}
-							
-							if(observation.getInputType() != null){
+
+							if (observation.getInputType() != null) {
 								selectListBoxItem(inputTypeField, observation.getInputType().getName());
 							}
 
@@ -381,10 +380,30 @@ public class TagBuilderPage {
 
 					});
 
-					tagTable.setText(row, 0, "NULL");
-					tagTable.setText(row, 1, "NULL");
-					tagTable.setText(row, 2, "NULL");
+					Tag tag = observation.getTag();
+					if (tag != null) {
+						String ecn = (tag.getAsset() != null && tag.getAsset().getEcn() != null
+								&& tag.getAsset().getEcn().length() > 0) ? tag.getAsset().getEcn() : "NULL";
+								
+						String code = (observation.getCode() != null && !observation.getCode().isEmpty()) ? observation.getCode() : "NULL";
+						
+						String tagName = (tag.getName() != null && !tag.getName().isEmpty()) ? tag.getName() : "NULL";
+						
+						TextBox tagNameField = new TextBox();
+						tagNameField.setWidth("80%");
+						tagNameField.setText(tagName);	
+
+						tagTable.setText(row, 0, ecn);
+						tagTable.setText(row, 1, code);
+						tagTable.setWidget(row, 2, tagNameField);
+					} else {
+						tagTable.setText(row, 0, "NULL");
+						tagTable.setText(row, 1, "NULL");
+						tagTable.setText(row, 2, "NULL");
+						Window.alert("Hey");
+					}
 					tagTable.getRowFormatter().addStyleName(row, "selectedRow");
+
 					setCursorPointer(tagTable, row);
 
 					row++;
@@ -946,13 +965,13 @@ public class TagBuilderPage {
 			final String inputType = ((ListBox) table.getWidget(row, 2)).getSelectedValue();
 			final String measurement = ((ListBox) table.getWidget(row, 3)).getSelectedValue();
 			final String units = ((ListBox) table.getWidget(row, 4)).getSelectedValue();
-			
+
 			code = code.isEmpty() ? null : code;
-			
+
 			final Observation observation = selectedAsset.getObservations().get(row - 2);
 			observation.setCode(code);
 			observation.setDescription(description);
-			
+
 			lookupService.getLookupByName(inputType, new AsyncCallback<Lookup>() {
 
 				@Override
@@ -1081,16 +1100,16 @@ public class TagBuilderPage {
 				JavaScriptObject observationObject = jsUtil.getArrayElement(observationArray, j);
 				Observation observation = new Observation();
 				observation.setDescription(jsUtil.getValueAsString(observationObject, "Name"));
-				
+
 				// Tag
 				String piPoint = jsUtil.getValueAsString(observationObject, "PIPoint");
 				Tag tag = new Tag();
-				if(piPoint != null && !piPoint.isEmpty()){
+				if (piPoint != null && !piPoint.isEmpty()) {
 					tag.setName(piPoint);
 				}
 				tag.setAsset(asset);
 				tag.setObservation(observation);
-				
+
 				observation.setTag(tag);
 				observations.add(observation);
 			}

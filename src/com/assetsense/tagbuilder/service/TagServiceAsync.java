@@ -2,9 +2,7 @@ package com.assetsense.tagbuilder.service;
 
 import java.util.List;
 
-import com.assetsense.tagbuilder.c2.domain.Observation;
 import com.assetsense.tagbuilder.c2.domain.Tag;
-import com.assetsense.tagbuilder.dto.TagDTO;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public interface TagServiceAsync {
@@ -13,5 +11,5 @@ public interface TagServiceAsync {
 
 	void saveTags(List<Tag> tags, AsyncCallback<Void> callback);
 
-	void getTagByObservationId(Long observationId, AsyncCallback<TagDTO> callback);
+	void getTagByObservationId(Long observationId, AsyncCallback<Tag> callback);
 }

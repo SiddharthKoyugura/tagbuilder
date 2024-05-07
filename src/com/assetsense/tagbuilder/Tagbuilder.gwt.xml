@@ -26,7 +26,6 @@
   <source path='ui'/>
   <source path='shared'/>
   <source path='service' />
-  <source path='serviceImpl' />
   <source path='c2' />
   <source path='pi' />
   <source path='utils' />

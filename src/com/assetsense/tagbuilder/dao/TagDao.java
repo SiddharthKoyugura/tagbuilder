@@ -2,9 +2,7 @@ package com.assetsense.tagbuilder.dao;
 
 import java.util.List;
 
-import com.assetsense.tagbuilder.c2.domain.Observation;
 import com.assetsense.tagbuilder.c2.domain.Tag;
-import com.assetsense.tagbuilder.dto.TagDTO;
 
 public interface TagDao {
 
@@ -12,5 +10,5 @@ public interface TagDao {
 	
 	public void saveTags(List<Tag> tags);
 	
-	public TagDTO getTagByObservationId(Long observationId);
+	public Tag getTagByObservationId(Long observationId);
 }

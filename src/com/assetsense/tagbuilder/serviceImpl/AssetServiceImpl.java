@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.assetsense.tagbuilder.c2.domain.Asset;
 import com.assetsense.tagbuilder.dao.AssetDaoImpl;
-import com.assetsense.tagbuilder.dto.AssetDTO;
 import com.assetsense.tagbuilder.service.AssetService;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -28,19 +27,23 @@ public class AssetServiceImpl extends RemoteServiceServlet implements AssetServi
 	}
 
 	@Override
-	public List<AssetDTO> saveAssets(List<Asset> assets) {
+	public List<Asset> saveAssets(List<Asset> assets) {
 		assetDao = (AssetDaoImpl) ApplicationContextListener.applicationContext.getBean("assetDaoImpl");
-		return assetDao.saveAssets(assets);
+		List<Asset> assetsInDB =  assetDao.saveAssets(assets);
+		for(Asset asset: assetsInDB){
+			asset.detach();
+		}
+		return assetsInDB;
 	}
 
 	@Override
-	public AssetDTO getAssetById(String id) {
+	public Asset getAssetById(String id) {
 		assetDao = (AssetDaoImpl) ApplicationContextListener.applicationContext.getBean("assetDaoImpl");
 		return assetDao.getAssetById(id);
 	}
 
 	@Override
-	public AssetDTO getAssetByName(String name) {
+	public Asset getAssetByName(String name) {
 		assetDao = (AssetDaoImpl) ApplicationContextListener.applicationContext.getBean("assetDaoImpl");
 		return assetDao.getAssetByName(name);
 	}
@@ -52,7 +55,7 @@ public class AssetServiceImpl extends RemoteServiceServlet implements AssetServi
 	}
 
 	@Override
-	public List<AssetDTO> getParentAssets() {
+	public List<Asset> getParentAssets() {
 		assetDao = (AssetDaoImpl) ApplicationContextListener.applicationContext.getBean("assetDaoImpl");
 		return assetDao.getParentAssets();
 	}

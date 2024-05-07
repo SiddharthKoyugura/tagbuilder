@@ -6,18 +6,15 @@ import java.util.List;
 import java.util.Map;
 
 import com.assetsense.tagbuilder.c2.domain.Asset;
-import com.assetsense.tagbuilder.c2.domain.Observation;
-import com.assetsense.tagbuilder.c2.domain.Tag;
 import com.assetsense.tagbuilder.c2.domain.Lookup;
 import com.assetsense.tagbuilder.c2.domain.Measurement;
-import com.assetsense.tagbuilder.dto.AssetDTO;
-import com.assetsense.tagbuilder.dto.ObservationDTO;
+import com.assetsense.tagbuilder.c2.domain.Observation;
+import com.assetsense.tagbuilder.c2.domain.Tag;
 import com.assetsense.tagbuilder.service.AssetService;
 import com.assetsense.tagbuilder.service.AssetServiceAsync;
 import com.assetsense.tagbuilder.service.LookupService;
 import com.assetsense.tagbuilder.service.LookupServiceAsync;
 import com.assetsense.tagbuilder.utils.JsUtil;
-import com.assetsense.tagbuilder.utils.TypeConverter;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.shared.GWT;
@@ -58,7 +55,6 @@ public class TagBuilderPage {
 	private final LookupServiceAsync lookupService = GWT.create(LookupService.class);
 	// private final TagServiceAsync tagService = GWT.create(TagService.class);
 
-	private final TypeConverter typeConverter = new TypeConverter();
 
 	private final JsUtil jsUtil = new JsUtil();
 
@@ -68,7 +64,7 @@ public class TagBuilderPage {
 
 	private FlexTable selectedTable = null;
 	private int selectedRow;
-	private AssetDTO selectedAsset = null;
+	private Asset selectedAsset = null;
 
 	private int selectedAssetRow = 0;
 
@@ -179,8 +175,8 @@ public class TagBuilderPage {
 		return tree;
 	}
 
-	private void renderTree(List<AssetDTO> assets, Tree tree) {
-		for (final AssetDTO asset : assets) {
+	private void renderTree(List<Asset> assets, Tree tree) {
+		for (final Asset asset : assets) {
 			Label label = new Label(asset.getName());
 			TreeItem item = new TreeItem(label);
 
@@ -202,8 +198,8 @@ public class TagBuilderPage {
 		}
 	}
 
-	private void renderChildren(TreeItem parentItem, List<AssetDTO> children) {
-		for (final AssetDTO child : children) {
+	private void renderChildren(TreeItem parentItem, List<Asset> children) {
+		for (final Asset child : children) {
 			Label label = new Label(child.getName());
 			TreeItem childItem = new TreeItem(label);
 
@@ -226,7 +222,7 @@ public class TagBuilderPage {
 	}
 
 	private void updateTables(String assetId) {
-		assetService.getAssetById(assetId, new AsyncCallback<AssetDTO>() {
+		assetService.getAssetById(assetId, new AsyncCallback<Asset>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -234,7 +230,7 @@ public class TagBuilderPage {
 			}
 
 			@Override
-			public void onSuccess(AssetDTO asset) {
+			public void onSuccess(Asset asset) {
 				selectedAsset = asset;
 				int row = getTableLastRow(assetTable);
 
@@ -280,7 +276,7 @@ public class TagBuilderPage {
 		resetTable(obsTable);
 		resetTable(tagTable);
 
-		assetService.getAssetByName(assetName, new AsyncCallback<AssetDTO>() {
+		assetService.getAssetByName(assetName, new AsyncCallback<Asset>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
@@ -289,10 +285,10 @@ public class TagBuilderPage {
 			}
 
 			@Override
-			public void onSuccess(AssetDTO asset) {
+			public void onSuccess(Asset asset) {
 				selectedAsset = asset;
 				int row = getTableLastRow(obsTable);
-				for (final ObservationDTO observation : asset.getObservations()) {
+				for (final Observation observation : asset.getObservations()) {
 
 					final ListBox measurementField = new ListBox();
 					measurementField.getElement().getStyle().setBackgroundColor("white");
@@ -399,7 +395,7 @@ public class TagBuilderPage {
 	}
 
 	private void updateUnitsField(final ListBox unitsField, final String measurementName, final Boolean hasUnit,
-			final ObservationDTO observation) {
+			final Observation observation) {
 		lookupService.getLookupByMeasurementName(measurementName, new AsyncCallback<List<Lookup>>() {
 
 			@Override
@@ -438,7 +434,7 @@ public class TagBuilderPage {
 		table.getRowFormatter().getElement(row).getStyle().setProperty("cursor", "pointer");
 	}
 
-	private HorizontalPanel getModelField(final AssetDTO asset) {
+	private HorizontalPanel getModelField(final Asset asset) {
 		HorizontalPanel horizontalPanel = new HorizontalPanel();
 		horizontalPanel.setWidth("100%");
 		horizontalPanel.setStyleName("removeBorder");
@@ -582,9 +578,7 @@ public class TagBuilderPage {
 																						.addItem(modelField.getValue());
 																				dialogBox.hide();
 
-																				Asset assetDAO = typeConverter
-																						.convertToAsset(asset);
-																				assetService.updateAsset(assetDAO,
+																				assetService.updateAsset(asset,
 																						new AsyncCallback<Void>() {
 
 																							@Override
@@ -943,7 +937,7 @@ public class TagBuilderPage {
 			selectedAsset.setEcn(ecn);
 			selectedAsset.setLocation(location);
 			selectedAsset.setName(assetName);
-			updateAsset(typeConverter.convertToAsset(selectedAsset));
+			updateAsset(selectedAsset);
 
 		} else if (table == obsTable) {
 
@@ -955,7 +949,7 @@ public class TagBuilderPage {
 			
 			code = code.isEmpty() ? null : code;
 			
-			final ObservationDTO observation = selectedAsset.getObservations().get(row - 2);
+			final Observation observation = selectedAsset.getObservations().get(row - 2);
 			observation.setCode(code);
 			observation.setDescription(description);
 			
@@ -983,11 +977,11 @@ public class TagBuilderPage {
 							@Override
 							public void onSuccess(Lookup unit) {
 								observation.setUnitid(unit);
-								updateAsset(typeConverter.convertToAsset(selectedAsset));
+								updateAsset(selectedAsset);
 							}
 						});
 					} else {
-						updateAsset(typeConverter.convertToAsset(selectedAsset));
+						updateAsset(selectedAsset);
 					}
 				}
 
@@ -1034,7 +1028,7 @@ public class TagBuilderPage {
 
 			List<Asset> assets = getAssetHierrarchy(jsArray);
 
-			assetService.saveAssets(assets, new AsyncCallback<List<AssetDTO>>() {
+			assetService.saveAssets(assets, new AsyncCallback<List<Asset>>() {
 
 				@Override
 				public void onFailure(Throwable caught) {
@@ -1043,14 +1037,13 @@ public class TagBuilderPage {
 				}
 
 				@Override
-				public void onSuccess(List<AssetDTO> assetDTOs) {
+				public void onSuccess(List<Asset> assetDTOs) {
 					renderTree(assetDTOs, tree);
-					// Window.alert(assetDTOs.size() + "");
 				}
 
 			});
 		} else {
-			assetService.getParentAssets(new AsyncCallback<List<AssetDTO>>() {
+			assetService.getParentAssets(new AsyncCallback<List<Asset>>() {
 
 				@Override
 				public void onFailure(Throwable caught) {
@@ -1059,8 +1052,8 @@ public class TagBuilderPage {
 				}
 
 				@Override
-				public void onSuccess(List<AssetDTO> assetDTOs) {
-					renderTree(assetDTOs, tree);
+				public void onSuccess(List<Asset> assets) {
+					renderTree(assets, tree);
 				}
 
 			});
@@ -1088,10 +1081,18 @@ public class TagBuilderPage {
 				JavaScriptObject observationObject = jsUtil.getArrayElement(observationArray, j);
 				Observation observation = new Observation();
 				observation.setDescription(jsUtil.getValueAsString(observationObject, "Name"));
-				observations.add(observation);
 				
+				// Tag
+				String piPoint = jsUtil.getValueAsString(observationObject, "PIPoint");
 				Tag tag = new Tag();
+				if(piPoint != null && !piPoint.isEmpty()){
+					tag.setName(piPoint);
+				}
+				tag.setAsset(asset);
+				tag.setObservation(observation);
 				
+				observation.setTag(tag);
+				observations.add(observation);
 			}
 
 			asset.setObservations(observations);

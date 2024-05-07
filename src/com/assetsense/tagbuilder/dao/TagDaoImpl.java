@@ -11,13 +11,10 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import com.assetsense.tagbuilder.c2.domain.Tag;
-import com.assetsense.tagbuilder.dto.TagDTO;
-import com.assetsense.tagbuilder.utils.TypeConverter;
 
 public class TagDaoImpl implements TagDao {
 	private SessionFactory sessionFactory;
 	private Log Logger = LogFactory.getLog(AssetDaoImpl.class);
-	private final TypeConverter typeConverter = new TypeConverter();
 
 	public SessionFactory getSessionFactory() {
 		return sessionFactory;
@@ -79,16 +76,15 @@ public class TagDaoImpl implements TagDao {
 	}
 
 	@Override
-	public TagDTO getTagByObservationId(Long observationId) {
-		TagDTO tagDTO = null;
+	public Tag getTagByObservationId(Long observationId) {
+		Tag tag = null;
 		Transaction tx = null;
 		Session session = sessionFactory.openSession();
 		try {
 			tx = session.beginTransaction();
 			Query<Tag> query = session.createQuery("FROM Tag WHERE observation=:observation", Tag.class);
 			query.setParameter("observation", observationId);
-			Tag tag = query.getResultList().get(0);
-			tagDTO = typeConverter.convertToTagDTO(tag);
+			tag = query.getResultList().get(0);
 			tx.commit();
 		} catch (HibernateException e) {
 			if (tx != null) {
@@ -99,7 +95,7 @@ public class TagDaoImpl implements TagDao {
 			session.close();
 		}
 
-		return tagDTO;
+		return tag;
 	}
 
 }

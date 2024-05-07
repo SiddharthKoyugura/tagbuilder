@@ -2,7 +2,7 @@ package com.assetsense.tagbuilder.c2.domain;
 
 import java.io.Serializable;
 
-public class Observation implements Serializable {
+public class Observation extends PersistantObject implements Serializable {
 
 	/**
 	 * 
@@ -16,6 +16,12 @@ public class Observation implements Serializable {
 	private Measurement measurement;
 	private Lookup unitid;
 	private Tag tag;
+	
+	@Override
+	public void detach() {
+		super.detach();
+//		tag.detach();
+	}
 
 	public long getId() {
 		return id;

@@ -16,6 +16,7 @@
 		<many-to-one name="category" column="category" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false" />
 		<many-to-one name="measurement" column="measurement" class="com.assetsense.tagbuilder.c2.domain.Measurement" not-null="false" fetch="select" lazy="false" />
 		<many-to-one name="unitid" column="unitid" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false" />
+		<one-to-one name="tag" class="com.assetsense.tagbuilder.c2.domain.Tag" constrained="false" />
 	</class>
 	
 </hibernate-mapping>

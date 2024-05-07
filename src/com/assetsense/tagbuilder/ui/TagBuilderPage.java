@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.assetsense.tagbuilder.c2.domain.Asset;
 import com.assetsense.tagbuilder.c2.domain.Observation;
+import com.assetsense.tagbuilder.c2.domain.Tag;
 import com.assetsense.tagbuilder.c2.domain.Lookup;
 import com.assetsense.tagbuilder.c2.domain.Measurement;
 import com.assetsense.tagbuilder.dto.AssetDTO;
@@ -338,7 +339,9 @@ public class TagBuilderPage {
 					descriptionField.setText(description.trim().length() > 0 ? description.trim() : "");
 
 					final ListBox inputTypeField = new ListBox();
-					inputTypeField.addItem("<Select>");
+					if(observation.getInputType() == null){
+						inputTypeField.addItem("<Select>");
+					}
 					inputTypeField.getElement().getStyle().setProperty("width", "100%");
 
 					inputTypeField.addChangeHandler(new ChangeHandler() {
@@ -364,6 +367,10 @@ public class TagBuilderPage {
 						public void onSuccess(List<Lookup> inputTypes) {
 							for (Lookup inputType : inputTypes) {
 								inputTypeField.addItem(inputType.getName());
+							}
+							
+							if(observation.getInputType() != null){
+								selectListBoxItem(inputTypeField, observation.getInputType().getName());
 							}
 
 							obsTable.setWidget(currentRow, 0, codeField);
@@ -945,12 +952,13 @@ public class TagBuilderPage {
 			final String inputType = ((ListBox) table.getWidget(row, 2)).getSelectedValue();
 			final String measurement = ((ListBox) table.getWidget(row, 3)).getSelectedValue();
 			final String units = ((ListBox) table.getWidget(row, 4)).getSelectedValue();
-
-			code = code.length() > 0 ? code : null;
-
-			selectedAsset.getObservations().get(2 - row).setCode(code);
-			selectedAsset.getObservations().get(2 - row).setDescription(description);
-
+			
+			code = code.isEmpty() ? null : code;
+			
+			final ObservationDTO observation = selectedAsset.getObservations().get(row - 2);
+			observation.setCode(code);
+			observation.setDescription(description);
+			
 			lookupService.getLookupByName(inputType, new AsyncCallback<Lookup>() {
 
 				@Override
@@ -961,9 +969,9 @@ public class TagBuilderPage {
 
 				@Override
 				public void onSuccess(Lookup inputTypeLookup) {
-					selectedAsset.getObservations().get(2 - row).setInputType(inputTypeLookup);
+					observation.setInputType(inputTypeLookup);
 					if (!measurement.equals("<Select>")) {
-						selectedAsset.getObservations().get(2 - row).setMeasurement(measurementMap.get(measurement));
+						observation.setMeasurement(measurementMap.get(measurement));
 						lookupService.getLookupByName(units, new AsyncCallback<Lookup>() {
 
 							@Override
@@ -974,7 +982,7 @@ public class TagBuilderPage {
 
 							@Override
 							public void onSuccess(Lookup unit) {
-								selectedAsset.getObservations().get(2 - row).setUnitid(unit);
+								observation.setUnitid(unit);
 								updateAsset(typeConverter.convertToAsset(selectedAsset));
 							}
 						});
@@ -1081,6 +1089,9 @@ public class TagBuilderPage {
 				Observation observation = new Observation();
 				observation.setDescription(jsUtil.getValueAsString(observationObject, "Name"));
 				observations.add(observation);
+				
+				Tag tag = new Tag();
+				
 			}
 
 			asset.setObservations(observations);

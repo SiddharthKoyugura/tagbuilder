@@ -15,6 +15,7 @@ public class Observation implements Serializable {
 	private Lookup category;
 	private Measurement measurement;
 	private Lookup unitid;
+	private Tag tag;
 
 	public long getId() {
 		return id;
@@ -70,6 +71,14 @@ public class Observation implements Serializable {
 
 	public void setUnitid(Lookup unitid) {
 		this.unitid = unitid;
+	}
+
+	public Tag getTag() {
+		return tag;
+	}
+
+	public void setTag(Tag tag) {
+		this.tag = tag;
 	}
 
 }

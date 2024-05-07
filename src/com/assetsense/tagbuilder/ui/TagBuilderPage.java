@@ -29,6 +29,8 @@ import com.google.gwt.event.dom.client.DragStartEvent;
 import com.google.gwt.event.dom.client.DragStartHandler;
 import com.google.gwt.event.dom.client.DropEvent;
 import com.google.gwt.event.dom.client.DropHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
+import com.google.gwt.event.dom.client.KeyUpHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
@@ -233,9 +235,22 @@ public class TagBuilderPage {
 				selectedAsset = asset;
 				int row = getTableLastRow(assetTable);
 
-				TextBox ecnField = new TextBox();
+				final TextBox ecnField = new TextBox();
 				String ecn = (asset.getEcn() != null && asset.getEcn().trim().length() > 0) ? asset.getEcn() : "";
 				ecnField.setText(ecn);
+
+				ecnField.addKeyUpHandler(new KeyUpHandler() {
+
+					@Override
+					public void onKeyUp(KeyUpEvent event) {
+						String ecn = ecnField.getText();
+						String data = ecn.isEmpty() ? "NULL" : ecn;
+						for (int row = 2; row < getTableLastRow(tagTable); row++) {
+							updateTagTableField(row, 0, data);
+						}
+					}
+
+				});
 
 				TextBox assetField = new TextBox();
 				String assetName = asset.getName();
@@ -327,8 +342,9 @@ public class TagBuilderPage {
 					String description = observation.getDescription();
 
 					final TextBox codeField = new TextBox();
-					codeField.setText(observation.getCode() != null && observation.getCode().length() > 0
-							? observation.getCode() : "");
+					final String currentCode = observation.getCode() != null && observation.getCode().length() > 0
+							? observation.getCode() : "";
+					codeField.setText(currentCode);
 
 					final TextBox descriptionField = new TextBox();
 					descriptionField.setText(description.trim().length() > 0 ? description.trim() : "");
@@ -379,19 +395,30 @@ public class TagBuilderPage {
 						}
 
 					});
+					
+					codeField.addKeyUpHandler(new KeyUpHandler(){
+						@Override
+						public void onKeyUp(KeyUpEvent event) {
+							String code = codeField.getText();
+							String data = code.isEmpty() ? "NULL" : code;
+							updateTagTableField(currentRow, 1, data);
+						}
+						
+					});
 
 					Tag tag = observation.getTag();
 					if (tag != null) {
 						String ecn = (tag.getAsset() != null && tag.getAsset().getEcn() != null
 								&& tag.getAsset().getEcn().length() > 0) ? tag.getAsset().getEcn() : "NULL";
-								
-						String code = (observation.getCode() != null && !observation.getCode().isEmpty()) ? observation.getCode() : "NULL";
-						
+
+						String code = (observation.getCode() != null && !observation.getCode().isEmpty())
+								? observation.getCode() : "NULL";
+
 						String tagName = (tag.getName() != null && !tag.getName().isEmpty()) ? tag.getName() : "NULL";
-						
+
 						TextBox tagNameField = new TextBox();
 						tagNameField.setWidth("80%");
-						tagNameField.setText(tagName);	
+						tagNameField.setText(tagName);
 
 						tagTable.setText(row, 0, ecn);
 						tagTable.setText(row, 1, code);
@@ -411,6 +438,10 @@ public class TagBuilderPage {
 			}
 
 		});
+	}
+
+	private void updateTagTableField(int row, int col, String data) {
+		tagTable.setText(row, col, data);
 	}
 
 	private void updateUnitsField(final ListBox unitsField, final String measurementName, final Boolean hasUnit,
@@ -1007,13 +1038,11 @@ public class TagBuilderPage {
 			});
 
 		} else if (table == tagTable) {
-			String assetName = ((TextBox) table.getWidget(row, 0)).getText();
-			String code = ((TextBox) table.getWidget(row, 1)).getText();
 			String tag = ((TextBox) table.getWidget(row, 2)).getText();
 
-			table.setText(row, 0, assetName);
-			table.setText(row, 1, code);
-			table.setText(row, 2, tag);
+			final Observation observation = selectedAsset.getObservations().get(row - 2);
+			observation.getTag().setName(tag);
+			updateAsset(selectedAsset);
 		}
 
 	}

@@ -342,11 +342,13 @@ public class TagBuilderPage {
 					String description = observation.getDescription();
 
 					final TextBox codeField = new TextBox();
+					codeField.setWidth("98%");
 					final String currentCode = observation.getCode() != null && observation.getCode().length() > 0
 							? observation.getCode() : "";
 					codeField.setText(currentCode);
 
 					final TextBox descriptionField = new TextBox();
+					descriptionField.setWidth("98%");
 					descriptionField.setText(description.trim().length() > 0 ? description.trim() : "");
 
 					final ListBox inputTypeField = new ListBox();
@@ -395,15 +397,15 @@ public class TagBuilderPage {
 						}
 
 					});
-					
-					codeField.addKeyUpHandler(new KeyUpHandler(){
+
+					codeField.addKeyUpHandler(new KeyUpHandler() {
 						@Override
 						public void onKeyUp(KeyUpEvent event) {
 							String code = codeField.getText();
 							String data = code.isEmpty() ? "NULL" : code;
 							updateTagTableField(currentRow, 1, data);
 						}
-						
+
 					});
 
 					Tag tag = observation.getTag();
@@ -493,22 +495,24 @@ public class TagBuilderPage {
 		modelItems.getElement().getStyle().setBackgroundColor("white");
 		modelItems.setWidth("100%");
 
-		lookupService.getLookupByCategory("110", new AsyncCallback<List<Lookup>>() {
+		if (asset.getCategory() != null && !asset.getCategory().isEmpty()) {
+			lookupService.getLookupByCategory(asset.getCategory(), new AsyncCallback<List<Lookup>>() {
 
-			@Override
-			public void onFailure(Throwable caught) {
+				@Override
+				public void onFailure(Throwable caught) {
 
-			}
-
-			@Override
-			public void onSuccess(List<Lookup> lookups) {
-				for (Lookup lookup : lookups) {
-					modelItems.addItem(lookup.getName());
 				}
-			}
 
-		});
+				@Override
+				public void onSuccess(List<Lookup> lookups) {
+					for (Lookup lookup : lookups) {
+						modelItems.addItem(lookup.getName());
+					}
+					selectListBoxItem(modelItems, asset.getModel().getName());
+				}
 
+			});
+		}
 		final Button addButton = new Button("+");
 		addButton.getElement().getStyle().setProperty("cursor", "pointer");
 
@@ -611,7 +615,7 @@ public class TagBuilderPage {
 															public void onSuccess(Lookup supplier) {
 																asset.setSupplierName(supplier);
 																Lookup model = new Lookup();
-																model.setCategoryId("110");
+																model.setCategoryId(asset.getCategory());
 																model.setName(modelField.getValue());
 																lookupService.saveLookup(model,
 																		new AsyncCallback<Void>() {
@@ -813,10 +817,10 @@ public class TagBuilderPage {
 		hpanel.getElement().getStyle().setPaddingRight(10, Unit.PX);
 
 		hpanel.add(buildAssetTable());
-		hpanel.add(buildObservationTable());
+		hpanel.add(buildTagTable());
 
 		mainPanel.add(hpanel);
-		mainPanel.add(buildTagTable());
+		mainPanel.add(buildObservationTable());
 
 		mainPanel.addDomHandler(new DragOverHandler() {
 
@@ -877,10 +881,10 @@ public class TagBuilderPage {
 	private VerticalPanel buildObservationTable() {
 		VerticalPanel mainPanel = new VerticalPanel();
 		mainPanel.setWidth("100%");
-		mainPanel.setHeight("300px");
+		mainPanel.setHeight("270px");
 		mainPanel.getElement().getStyle().setBackgroundColor("#D9D9D9");
 		mainPanel.getElement().getStyle().setProperty("border", "1px solid black");
-		mainPanel.getElement().getStyle().setMarginLeft(10, Unit.PX);
+		mainPanel.getElement().getStyle().setMarginTop(10, Unit.PX);
 
 		obsTable = new FlexTable();
 		obsTable.setWidth("100%");
@@ -912,10 +916,10 @@ public class TagBuilderPage {
 	private VerticalPanel buildTagTable() {
 		VerticalPanel mainPanel = new VerticalPanel();
 		mainPanel.setWidth("100%");
-		mainPanel.setHeight("270px");
+		mainPanel.setHeight("300px");
 		mainPanel.getElement().getStyle().setBackgroundColor("#D9D9D9");
 		mainPanel.getElement().getStyle().setProperty("border", "1px solid black");
-		mainPanel.getElement().getStyle().setMarginTop(10, Unit.PX);
+		mainPanel.getElement().getStyle().setMarginLeft(10, Unit.PX);
 
 		tagTable = new FlexTable();
 		tagTable.setWidth("100%");
@@ -966,7 +970,8 @@ public class TagBuilderPage {
 		selectedTable = table;
 		selectedRow = row;
 		if (table == assetTable && selectedAssetRow != row) {
-			updateObsAndTagTable(assetTable.getText(row, 1));
+			String assetName = ((TextBox) assetTable.getWidget(row, 1)).getText();
+			updateObsAndTagTable(assetName);
 			selectedAssetRow = row;
 		}
 	}
@@ -977,17 +982,37 @@ public class TagBuilderPage {
 
 		if (table == assetTable) {
 			String ecn = ((TextBox) table.getWidget(row, 0)).getText();
-			String location = ((TextBox) table.getWidget(row, 3)).getText();
 			String assetName = ((TextBox) table.getWidget(row, 1)).getText();
+			String modelName = ((ListBox)((HorizontalPanel) table.getWidget(row, 2)).getWidget(0)).getSelectedValue();
+			String location = ((TextBox) table.getWidget(row, 3)).getText();
 
 			ecn = ecn.length() > 0 ? ecn : null;
 			location = location.length() > 0 ? location : null;
 			assetName = assetName.length() > 0 ? assetName : null;
+			modelName = modelName.length() > 0 ? modelName : null;
 
 			selectedAsset.setEcn(ecn);
 			selectedAsset.setLocation(location);
 			selectedAsset.setName(assetName);
-			updateAsset(selectedAsset);
+			if(modelName != null){
+				lookupService.getLookupByName(modelName, new AsyncCallback<Lookup>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+						// TODO Auto-generated method stub
+						
+					}
+
+					@Override
+					public void onSuccess(Lookup model) {
+						selectedAsset.setModel(model);
+						updateAsset(selectedAsset);
+					}
+					
+				});
+			}else{
+				updateAsset(selectedAsset);
+			}
 
 		} else if (table == obsTable) {
 
@@ -997,7 +1022,7 @@ public class TagBuilderPage {
 			final String measurement = ((ListBox) table.getWidget(row, 3)).getSelectedValue();
 			final String units = ((ListBox) table.getWidget(row, 4)).getSelectedValue();
 
-			code = code.isEmpty() ? null : code;
+			code = code.length() > 0 ? code : null;
 
 			final Observation observation = selectedAsset.getObservations().get(row - 2);
 			observation.setCode(code);
@@ -1117,9 +1142,11 @@ public class TagBuilderPage {
 			Asset asset = new Asset();
 			String name = jsUtil.getValueAsString(assetObject, "Name");
 			String id = jsUtil.getValueAsString(assetObject, "ID");
+			String category = jsUtil.getValueAsString(assetObject, "Template");
 
 			asset.setId(id);
 			asset.setName(name);
+			asset.setCategory(category);
 
 			List<Observation> observations = new ArrayList<>();
 

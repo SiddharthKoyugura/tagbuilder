@@ -713,26 +713,16 @@ public class TagBuilderPage {
 
 	// End: LeftSidebar
 
-	private ScrollPanel buildDetailsDashboard() {
-		ScrollPanel mainPanel = new ScrollPanel();
-		mainPanel.setSize("100%", "100%");
-
+	private VerticalPanel buildDetailsDashboard() {
 		VerticalPanel vpanel = new VerticalPanel();
 		vpanel.setWidth("100%");
 		vpanel.setHeight("100%");
 		vpanel.getElement().getStyle().setBackgroundColor("#EEEEEE");
 
-		ScrollPanel spanel = new ScrollPanel();
-		spanel.setSize("100vw", "100vh");
-
-		spanel.add(buildTables());
-
 		vpanel.add(buildDetailsNavbar());
-		vpanel.add(spanel);
+		vpanel.add(buildTables());
 
-		mainPanel.add(vpanel);
-
-		return mainPanel;
+		return vpanel;
 	}
 
 	private HorizontalPanel buildDetailsNavbar() {
@@ -764,11 +754,12 @@ public class TagBuilderPage {
 
 	private VerticalPanel buildTables() {
 		VerticalPanel mainPanel = new VerticalPanel();
-//		mainPanel.setWidth("100%");
+		mainPanel.setWidth("100%");
 		mainPanel.getElement().getStyle().setPadding(10, Unit.PX);
 
 		HorizontalPanel hpanel = new HorizontalPanel();
-		hpanel.setWidth("98%");
+		hpanel.setWidth("100%");
+		hpanel.getElement().getStyle().setPaddingRight(10, Unit.PX);
 
 		hpanel.add(buildAssetTable());
 		hpanel.add(buildObservationTable());
@@ -834,7 +825,7 @@ public class TagBuilderPage {
 
 	private VerticalPanel buildObservationTable() {
 		VerticalPanel mainPanel = new VerticalPanel();
-		mainPanel.setWidth("76%");
+		mainPanel.setWidth("100%");
 		mainPanel.setHeight("300px");
 		mainPanel.getElement().getStyle().setBackgroundColor("#D9D9D9");
 		mainPanel.getElement().getStyle().setProperty("border", "1px solid black");
@@ -869,7 +860,7 @@ public class TagBuilderPage {
 
 	private VerticalPanel buildTagTable() {
 		VerticalPanel mainPanel = new VerticalPanel();
-		mainPanel.setWidth("86%");
+		mainPanel.setWidth("100%");
 		mainPanel.setHeight("270px");
 		mainPanel.getElement().getStyle().setBackgroundColor("#D9D9D9");
 		mainPanel.getElement().getStyle().setProperty("border", "1px solid black");

@@ -12,12 +12,8 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import com.assetsense.tagbuilder.c2.domain.Asset;
-import com.assetsense.tagbuilder.dao.AssetDao;
-import com.assetsense.tagbuilder.dto.AssetDTO;
-import com.assetsense.tagbuilder.utils.TypeConverter;
 
 public class AssetDaoImpl implements AssetDao {
-	private final TypeConverter typeConverter = new TypeConverter();
 
 	private Log Logger = LogFactory.getLog(AssetDaoImpl.class);
 	private SessionFactory sessionFactory;
@@ -77,8 +73,8 @@ public class AssetDaoImpl implements AssetDao {
 	}
 
 	@Override
-	public List<AssetDTO> saveAssets(List<Asset> assets) {
-		List<AssetDTO> assetDTOs = new ArrayList<>();
+	public List<Asset> saveAssets(List<Asset> assets) {
+		List<Asset> assetsInDb = new ArrayList<>();
 		Transaction tx = null;
 		Session session = sessionFactory.openSession();
 		try {
@@ -98,10 +94,7 @@ public class AssetDaoImpl implements AssetDao {
 			tx.commit();
 			Query<Asset> query = session.createQuery("from Asset where is_completed=false AND parent_id IS NULL",
 					Asset.class);
-			List<Asset> assetsInDb = query.getResultList();
-			for (Asset asset : assetsInDb) {
-				assetDTOs.add(typeConverter.convertToAssetDTO(asset));
-			}
+			assetsInDb = query.getResultList();
 			Logger.info("transcation completed");
 		} catch (HibernateException e) {
 			if (tx != null) {
@@ -112,19 +105,18 @@ public class AssetDaoImpl implements AssetDao {
 			session.close();
 		}
 		Logger.info("end of save Assets");
-		return assetDTOs;
+		return assetsInDb;
 	}
 
 	@Override
-	public AssetDTO getAssetById(String id) {
-		AssetDTO asset = null;
+	public Asset getAssetById(String id) {
+		Asset asset = null;
 		Transaction tx = null;
 		Session session = sessionFactory.openSession();
 		try {
 			tx = session.beginTransaction();
 			Logger.info("transactionbegin");
-			Asset assetInDB = session.get(Asset.class, id);
-			asset = typeConverter.convertToAssetDTO(assetInDB);
+			asset = session.get(Asset.class, id);
 			tx.commit();
 			Logger.info("transcation completed");
 		} catch (HibernateException e) {
@@ -147,8 +139,8 @@ public class AssetDaoImpl implements AssetDao {
 	}
 
 	@Override
-	public AssetDTO getAssetByName(String name) {
-		AssetDTO asset = null;
+	public Asset getAssetByName(String name) {
+		Asset asset = null;
 		Transaction tx = null;
 		Session session = sessionFactory.openSession();
 		try {
@@ -156,8 +148,7 @@ public class AssetDaoImpl implements AssetDao {
 			Logger.info("transactionbegin");
 			Query<Asset> query = session.createQuery("FROM Asset Where name=:name", Asset.class);
 			query.setParameter("name", name);
-			Asset assetInDB = query.getResultList().get(0);
-			asset = typeConverter.convertToAssetDTO(assetInDB);
+			asset = query.getResultList().get(0);
 			tx.commit();
 			Logger.info("transcation completed");
 		} catch (HibernateException e) {
@@ -174,8 +165,8 @@ public class AssetDaoImpl implements AssetDao {
 	}
 
 	@Override
-	public List<AssetDTO> getParentAssets() {
-		List<AssetDTO> assetDTOs = new ArrayList<>();
+	public List<Asset> getParentAssets() {
+		List<Asset> assets = null;
 		Transaction tx = null;
 		Session session = sessionFactory.openSession();
 		try {
@@ -183,10 +174,7 @@ public class AssetDaoImpl implements AssetDao {
 			Logger.info("transactionbegin");
 			Query<Asset> query = session.createQuery("from Asset where is_completed=false AND parent_id IS NULL",
 					Asset.class);
-			List<Asset> assetsInDb = query.getResultList();
-			for (Asset asset : assetsInDb) {
-				assetDTOs.add(typeConverter.convertToAssetDTO(asset));
-			}
+			assets = query.getResultList();
 			tx.commit();
 			Logger.info("transcation completed");
 		} catch (HibernateException e) {
@@ -198,7 +186,7 @@ public class AssetDaoImpl implements AssetDao {
 			session.close();
 		}
 		Logger.info("end of get Assets");
-		return assetDTOs;
+		return assets;
 	}
 
 }

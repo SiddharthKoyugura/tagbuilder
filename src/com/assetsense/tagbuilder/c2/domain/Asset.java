@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Asset implements Serializable {
+public class Asset extends PersistantObject implements Serializable {
 
 	/**
 	 * 
@@ -25,6 +25,13 @@ public class Asset implements Serializable {
 	private Boolean isCompleted = false;
 
 	public Asset() {
+	}
+	
+	@Override
+	public void detach() {
+		super.detach();
+		childAssets = detachList(childAssets);
+		observations = detachList(observations);
 	}
 
 	public String getId() {

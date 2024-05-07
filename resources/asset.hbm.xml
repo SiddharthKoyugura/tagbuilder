@@ -18,12 +18,12 @@
 		<many-to-one name="supplierName" column="supplierName" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false" />
 		
 		
-		<list name="childAssets" cascade="all">
+		<list name="childAssets" cascade="all" lazy="false">
 		    <key column="parent_id" not-null="false" />
 		    <index column="child_index" />
 		    <one-to-many class="com.assetsense.tagbuilder.c2.domain.Asset" />
 		</list>
-		<list name="observations" cascade="all">
+		<list name="observations" cascade="all" lazy="false">
 		    <key column="assetId" not-null="false" />
 		    <index column="asset_index" />
 		    <one-to-many class="com.assetsense.tagbuilder.c2.domain.Observation" />

@@ -2,7 +2,7 @@ package com.assetsense.tagbuilder.c2.domain;
 
 import java.io.Serializable;
 
-public class Lookup implements Serializable {
+public class Lookup extends PersistantObject implements Serializable {
 
 	/**
 	 * 

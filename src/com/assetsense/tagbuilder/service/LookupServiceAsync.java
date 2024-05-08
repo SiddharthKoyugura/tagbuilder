@@ -17,5 +17,8 @@ public interface LookupServiceAsync {
 	void saveLookup(Lookup lookup, AsyncCallback<Void> callback);
 	
 	void getLookupByName(String name, AsyncCallback<Lookup> callback);
+	
+	void getLookupsByNames(List<String> names, AsyncCallback<List<Lookup>> callback);
+	
 	void getLookupByMeasurementName(String measurement, AsyncCallback<List<Lookup>> callback);
 }

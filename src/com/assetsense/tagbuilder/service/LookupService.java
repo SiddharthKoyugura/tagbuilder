@@ -20,5 +20,7 @@ public interface LookupService extends RemoteService{
 	
 	public Lookup getLookupByName(String name);
 	
+	public List<Lookup> getLookupsByNames(List<String> names);
+	
 	public List<Lookup> getLookupByMeasurementName(String measurement);
 }

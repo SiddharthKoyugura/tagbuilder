@@ -10,13 +10,14 @@
 
 		<property name="name" column="name" not-null="false" type="string"></property>
 		<property name="ecn" column="ecn" unique="true" not-null="false" type="string"></property>
-		<many-to-one name="model" column="model" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false" />
-		<property name="location" column="location" not-null="false" type="string"></property>
 		<property name="category" column="category" not-null="false" type="string"></property>
 		<property name="isCompleted" column="is_completed" not-null="true" type="boolean"></property>
+		
+		<many-to-one name="location" column="location" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false" />
+		<many-to-one name="model" column="model" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false" />
 		<many-to-one name="assettype" column="assettype" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false" />
 		<many-to-one name="supplierName" column="supplierName" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false" />
-		
+	
 		
 		<list name="childAssets" cascade="all" lazy="false">
 		    <key column="parent_id" not-null="false" />

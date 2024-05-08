@@ -14,7 +14,7 @@ public class Asset extends PersistantObject implements Serializable {
 	private String name;
 	private String ecn;
 	private Lookup model;
-	private String location;
+	private Lookup location;
 	private Lookup assettype;
 	private Lookup supplierName;
 
@@ -66,11 +66,11 @@ public class Asset extends PersistantObject implements Serializable {
 		this.model = model;
 	}
 
-	public String getLocation() {
+	public Lookup getLocation() {
 		return location;
 	}
 
-	public void setLocation(String location) {
+	public void setLocation(Lookup location) {
 		this.location = location;
 	}
 

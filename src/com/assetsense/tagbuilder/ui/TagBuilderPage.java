@@ -258,14 +258,10 @@ public class TagBuilderPage {
 				String assetName = asset.getName();
 				assetField.setText(assetName);
 
-				TextBox locationField = new TextBox();
-				String location = asset.getLocation() != null ? asset.getLocation() : "";
-				locationField.setText(location);
-
 				assetTable.setWidget(row, 0, ecnField);
 				assetTable.setWidget(row, 1, assetField);
 				assetTable.setWidget(row, 2, getModelField(asset));
-				assetTable.setWidget(row, 3, locationField);
+				assetTable.setWidget(row, 3, getLocationField(asset));
 
 				assetTable.getRowFormatter().addStyleName(row, "selectedRow");
 
@@ -357,6 +353,7 @@ public class TagBuilderPage {
 					if (observation.getInputType() == null) {
 						inputTypeField.addItem("<Select>");
 					}
+					inputTypeField.getElement().getStyle().setBackgroundColor("white");
 					inputTypeField.getElement().getStyle().setProperty("width", "100%");
 
 					final TextBox lowerLimitField = new TextBox();
@@ -561,7 +558,9 @@ public class TagBuilderPage {
 					for (Lookup lookup : lookups) {
 						modelItems.addItem(lookup.getName());
 					}
-					selectListBoxItem(modelItems, asset.getModel().getName());
+					if (asset.getModel() != null) {
+						selectListBoxItem(modelItems, asset.getModel().getName());
+					}
 				}
 
 			});
@@ -759,6 +758,154 @@ public class TagBuilderPage {
 		return horizontalPanel;
 	}
 
+	private HorizontalPanel getLocationField(final Asset asset) {
+		HorizontalPanel horizontalPanel = new HorizontalPanel();
+		horizontalPanel.setWidth("100%");
+		horizontalPanel.setStyleName("removeBorder");
+
+		final ListBox locationField = new ListBox();
+		locationField.getElement().getStyle().setBackgroundColor("white");
+		locationField.setWidth("100%");
+
+		lookupService.getLookupByCategory("location", new AsyncCallback<List<Lookup>>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+
+			}
+
+			@Override
+			public void onSuccess(List<Lookup> lookups) {
+				if(asset.getLocation() == null){
+					locationField.addItem("<Select>");
+				}
+				for (Lookup lookup : lookups) {
+					locationField.addItem(lookup.getName());
+				}
+				if (asset.getLocation() != null) {
+					selectListBoxItem(locationField, asset.getLocation().getName());
+				}
+			}
+
+		});
+
+		final Button addButton = new Button("+");
+		addButton.getElement().getStyle().setProperty("cursor", "pointer");
+
+		addButton.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				// showDialogBox();
+				final DialogBox dialogBox = new DialogBox();
+				dialogBox.setSize("100%", "100%");
+				dialogBox.setAnimationEnabled(true);
+
+				dialogBox.addStyleName("dialogBoxStyle");
+
+				final VerticalPanel vpanel = new VerticalPanel();
+				vpanel.setWidth("100%");
+
+				final HorizontalPanel h1panel = new HorizontalPanel();
+				h1panel.setWidth("100%");
+				h1panel.setHeight("40px");
+				h1panel.getElement().getStyle().setBackgroundColor("#5C9ED4");
+				h1panel.getElement().getStyle().setPadding(5, Unit.PX);
+
+				Button closeBtn = new Button("X");
+
+				closeBtn.addClickHandler(new ClickHandler() {
+
+					@Override
+					public void onClick(ClickEvent event) {
+						dialogBox.hide();
+					}
+
+				});
+
+				h1panel.add(closeBtn);
+
+				h1panel.setCellHorizontalAlignment(closeBtn, HasHorizontalAlignment.ALIGN_RIGHT);
+
+				final Grid grid = new Grid(2, 3);
+				grid.setCellPadding(10);
+				grid.getElement().getStyle().setProperty("padding", "20px");
+				grid.getElement().getStyle().setProperty("borderCollapse", "collapse");
+				grid.setWidth("100%");
+
+				final TextBox locationNameField = new TextBox();
+				locationNameField.setStyleName("inputFieldStyle");
+				locationNameField.setWidth("40%");
+
+				grid.setText(0, 0, "Location:");
+				grid.setWidget(0, 1, locationNameField);
+
+				Button saveBtn = new Button("Save");
+				grid.setWidget(1, 1, saveBtn);
+
+				saveBtn.addClickHandler(new ClickHandler() {
+
+					@Override
+					public void onClick(ClickEvent event) {
+						final String location = locationNameField.getText();
+						Lookup lookup = new Lookup();
+						lookup.setCategoryId("location");
+						lookup.setName(location);
+
+						lookupService.saveLookup(lookup, new AsyncCallback<Void>() {
+
+							@Override
+							public void onFailure(Throwable caught) {
+								// TODO Auto-generated method stub
+
+							}
+
+							@Override
+							public void onSuccess(Void result) {
+								locationField.addItem(location);
+								dialogBox.hide();
+							}
+
+						});
+					}
+
+				});
+
+				grid.getCellFormatter().getElement(1, 1).getStyle().setProperty("textAlign", "right");
+
+				vpanel.add(h1panel);
+				vpanel.add(grid);
+
+				dialogBox.add(vpanel);
+
+				dialogBox.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
+					@Override
+					public void setPosition(int offsetWidth, int offsetHeight) {
+						int left = addButton.getAbsoluteLeft();
+						int top = addButton.getAbsoluteTop() + addButton.getOffsetHeight();
+						dialogBox.setPopupPosition(left - 50, top);
+					}
+				});
+			}
+
+		});
+
+		HorizontalPanel buttonPanel = new HorizontalPanel();
+		buttonPanel.setStyleName("removeBorder");
+		buttonPanel.getElement().getStyle().setMarginLeft(2, Unit.PX);
+		buttonPanel.setWidth("auto");
+
+		buttonPanel.add(addButton);
+		buttonPanel.setCellHorizontalAlignment(addButton, HasHorizontalAlignment.ALIGN_RIGHT);
+
+		horizontalPanel.add(locationField);
+		horizontalPanel.add(buttonPanel);
+
+		horizontalPanel.setCellWidth(locationField, "100%");
+
+		return horizontalPanel;
+	}
+
 	private void toggleSupplierField(final Grid grid, Boolean isBegin) {
 		if (isBegin) {
 			supplierField = new ListBox();
@@ -910,7 +1057,7 @@ public class TagBuilderPage {
 		assetTable.getElement().getStyle().setProperty("borderCollapse", "collapse");
 		assetTable.setStyleName("table-padding tableStyle");
 
-		assetTable.setText(0, 0, "Assetmaster");
+		assetTable.setText(0, 0, "Asset Master");
 
 		assetTable.getFlexCellFormatter().setColSpan(0, 0, 4);
 		assetTable.getRowFormatter().setStyleName(0, "bg-blue");
@@ -1039,34 +1186,33 @@ public class TagBuilderPage {
 			String ecn = ((TextBox) table.getWidget(row, 0)).getText();
 			String assetName = ((TextBox) table.getWidget(row, 1)).getText();
 			String modelName = ((ListBox) ((HorizontalPanel) table.getWidget(row, 2)).getWidget(0)).getSelectedValue();
-			String location = ((TextBox) table.getWidget(row, 3)).getText();
+			String location = ((ListBox) ((HorizontalPanel) table.getWidget(row, 3)).getWidget(0)).getSelectedValue();
 
 			ecn = ecn.length() > 0 ? ecn : null;
-			location = location.length() > 0 ? location : null;
 			assetName = assetName.length() > 0 ? assetName : null;
-			modelName = modelName.length() > 0 ? modelName : null;
 
 			selectedAsset.setEcn(ecn);
-			selectedAsset.setLocation(location);
 			selectedAsset.setName(assetName);
-			if (modelName != null) {
-				lookupService.getLookupByName(modelName, new AsyncCallback<Lookup>() {
 
-					@Override
-					public void onFailure(Throwable caught) {
+			List<String> lookupNames = new ArrayList<>();
+			lookupNames.add(location);
+			lookupNames.add(modelName);
 
-					}
+			lookupService.getLookupsByNames(lookupNames, new AsyncCallback<List<Lookup>>() {
 
-					@Override
-					public void onSuccess(Lookup model) {
-						selectedAsset.setModel(model);
-						updateAsset(selectedAsset);
-					}
+				@Override
+				public void onFailure(Throwable caught) {
+				}
 
-				});
-			} else {
-				updateAsset(selectedAsset);
-			}
+				@Override
+				public void onSuccess(List<Lookup> lookups) {
+					selectedAsset.setLocation(lookups.get(0));
+					selectedAsset.setModel(lookups.get(1));
+
+					updateAsset(selectedAsset);
+				}
+
+			});
 
 		} else if (table == obsTable) {
 

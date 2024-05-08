@@ -16,6 +16,8 @@ public class Observation extends PersistantObject implements Serializable {
 	private Measurement measurement;
 	private Lookup unitid;
 	private Tag tag;
+	private Double lowerLimit;
+	private Double upperLimit;
 
 	@Override
 	public void detach() {
@@ -87,6 +89,22 @@ public class Observation extends PersistantObject implements Serializable {
 
 	public void setTag(Tag tag) {
 		this.tag = tag;
+	}
+
+	public Double getLowerLimit() {
+		return lowerLimit;
+	}
+
+	public void setLowerLimit(Double lowerLimit) {
+		this.lowerLimit = lowerLimit;
+	}
+
+	public Double getUpperLimit() {
+		return upperLimit;
+	}
+
+	public void setUpperLimit(Double upperLimit) {
+		this.upperLimit = upperLimit;
 	}
 
 	@Override

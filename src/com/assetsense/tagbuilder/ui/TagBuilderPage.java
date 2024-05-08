@@ -362,37 +362,27 @@ public class TagBuilderPage {
 					final TextBox lowerLimitField = new TextBox();
 					lowerLimitField.setWidth("80%");
 					setDecimalInputCriteria(lowerLimitField);
-					
+
 					final TextBox upperLimitField = new TextBox();
 					upperLimitField.setWidth("80%");
 					setDecimalInputCriteria(upperLimitField);
-					
-					if(observation.getLowerLimit() != null){
+
+					if (observation.getLowerLimit() != null) {
 						lowerLimitField.setText(observation.getLowerLimit().toString());
 					}
-					if(observation.getUpperLimit() != null){
+					if (observation.getUpperLimit() != null) {
 						upperLimitField.setText(observation.getUpperLimit().toString());
 					}
-					
+
 					final int currentRow = row;
 					inputTypeField.addChangeHandler(new ChangeHandler() {
 						@Override
 						public void onChange(ChangeEvent event) {
 							String inputType = inputTypeField.getSelectedValue();
-							if(inputType.equals("<Select>")){
-								obsTable.remove(lowerLimitField);
-								obsTable.remove(upperLimitField);
-							}else if(inputType.equals("condition")){
-								obsTable.setWidget(currentRow, 5, lowerLimitField);
-								obsTable.setWidget(currentRow, 6, upperLimitField);
-							}else {
-								obsTable.remove(lowerLimitField);
-								obsTable.remove(upperLimitField);
-							}
+							toggleLimitFields(inputType, currentRow, lowerLimitField, upperLimitField);
 						}
 					});
-					
-					
+
 					lookupService.getLookupByCategory("102", new AsyncCallback<List<Lookup>>() {
 
 						@Override
@@ -407,6 +397,10 @@ public class TagBuilderPage {
 								inputTypeField.addItem(inputType.getName());
 							}
 
+							if (observation.getInputType() != null) {
+								selectListBoxItem(inputTypeField, observation.getInputType().getName());
+							}
+
 							obsTable.setWidget(currentRow, 0, codeField);
 							obsTable.setWidget(currentRow, 1, descriptionField);
 							obsTable.setWidget(currentRow, 2, inputTypeField);
@@ -414,13 +408,9 @@ public class TagBuilderPage {
 							obsTable.setWidget(currentRow, 4, unitsField);
 							obsTable.setWidget(currentRow, 5, lowerLimitField);
 							obsTable.setWidget(currentRow, 6, upperLimitField);
-							
-							if (observation.getInputType() != null) {
-								selectListBoxItem(inputTypeField, observation.getInputType().getName());
-							}else{
-								obsTable.remove(lowerLimitField);
-								obsTable.remove(upperLimitField);
-							}
+
+							toggleLimitFields(inputTypeField.getSelectedValue(), currentRow, lowerLimitField,
+									upperLimitField);
 
 							obsTable.getRowFormatter().addStyleName(currentRow, "selectedRow");
 							setCursorPointer(obsTable, currentRow);
@@ -459,7 +449,6 @@ public class TagBuilderPage {
 						tagTable.setText(row, 0, "NULL");
 						tagTable.setText(row, 1, "NULL");
 						tagTable.setText(row, 2, "NULL");
-						Window.alert("Hey");
 					}
 					tagTable.getRowFormatter().addStyleName(row, "selectedRow");
 
@@ -471,27 +460,40 @@ public class TagBuilderPage {
 
 		});
 	}
-	
-	private void setDecimalInputCriteria(final TextBox textBox){
+
+	private void toggleLimitFields(String inputType, int currentRow, TextBox lowerLimitField, TextBox upperLimitField) {
+		if (inputType.equals("<Select>")) {
+			obsTable.remove(lowerLimitField);
+			obsTable.remove(upperLimitField);
+		} else if (inputType.equals("condition")) {
+			obsTable.setWidget(currentRow, 5, lowerLimitField);
+			obsTable.setWidget(currentRow, 6, upperLimitField);
+		} else {
+			obsTable.remove(lowerLimitField);
+			obsTable.remove(upperLimitField);
+		}
+	}
+
+	private void setDecimalInputCriteria(final TextBox textBox) {
 		textBox.addKeyPressHandler(new KeyPressHandler() {
 			@Override
 			public void onKeyPress(KeyPressEvent event) {
 				char inputChar = event.getCharCode();
 				if (!isValidCharacter(inputChar, textBox.getText())) {
 					textBox.cancelKey();
-	            }
+				}
 			}
 		});
 	}
-	
+
 	private boolean isValidCharacter(char ch, String currentText) {
-        if (Character.isDigit(ch)) {
-            return true;
-        } else if (ch == '.') {
-            return !currentText.contains(".");
-        }
-        return false;
-    }
+		if (Character.isDigit(ch)) {
+			return true;
+		} else if (ch == '.') {
+			return !currentText.contains(".");
+		}
+		return false;
+	}
 
 	private void updateTagTableField(int row, int col, String data) {
 		tagTable.setText(row, col, data);
@@ -1036,7 +1038,7 @@ public class TagBuilderPage {
 		if (table == assetTable) {
 			String ecn = ((TextBox) table.getWidget(row, 0)).getText();
 			String assetName = ((TextBox) table.getWidget(row, 1)).getText();
-			String modelName = ((ListBox)((HorizontalPanel) table.getWidget(row, 2)).getWidget(0)).getSelectedValue();
+			String modelName = ((ListBox) ((HorizontalPanel) table.getWidget(row, 2)).getWidget(0)).getSelectedValue();
 			String location = ((TextBox) table.getWidget(row, 3)).getText();
 
 			ecn = ecn.length() > 0 ? ecn : null;
@@ -1047,12 +1049,12 @@ public class TagBuilderPage {
 			selectedAsset.setEcn(ecn);
 			selectedAsset.setLocation(location);
 			selectedAsset.setName(assetName);
-			if(modelName != null){
+			if (modelName != null) {
 				lookupService.getLookupByName(modelName, new AsyncCallback<Lookup>() {
 
 					@Override
 					public void onFailure(Throwable caught) {
-						
+
 					}
 
 					@Override
@@ -1060,9 +1062,9 @@ public class TagBuilderPage {
 						selectedAsset.setModel(model);
 						updateAsset(selectedAsset);
 					}
-					
+
 				});
-			}else{
+			} else {
 				updateAsset(selectedAsset);
 			}
 
@@ -1073,12 +1075,14 @@ public class TagBuilderPage {
 			final String inputType = ((ListBox) table.getWidget(row, 2)).getSelectedValue();
 			final String measurement = ((ListBox) table.getWidget(row, 3)).getSelectedValue();
 			final String units = ((ListBox) table.getWidget(row, 4)).getSelectedValue();
-			final String lowerLimitString = ((TextBox) table.getWidget(row, 5)).getText();
-			final String upperLimitString = ((TextBox) table.getWidget(row, 6)).getText();
+
+			TextBox lowerLimitField = (TextBox) table.getWidget(row, 5);
+			TextBox upperLimitField = (TextBox) table.getWidget(row, 6);
+			final String lowerLimitString = lowerLimitField != null ? lowerLimitField.getText() : "";
+			final String upperLimitString = upperLimitField != null ? upperLimitField.getText() : "";
 
 			code = code.length() > 0 ? code : null;
 
-			
 			final Observation observation = selectedAsset.getObservations().get(row - 2);
 			observation.setCode(code);
 			observation.setDescription(description);
@@ -1086,7 +1090,6 @@ public class TagBuilderPage {
 			final Double upperLimit = upperLimitString.isEmpty() ? null : Double.parseDouble(upperLimitString);
 			observation.setLowerLimit(lowerLimit);
 			observation.setUpperLimit(upperLimit);
-			
 
 			lookupService.getLookupByName(inputType, new AsyncCallback<Lookup>() {
 

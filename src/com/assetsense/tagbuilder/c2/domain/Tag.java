@@ -15,11 +15,6 @@ public class Tag extends PersistantObject implements Serializable {
 
 	public Tag() {
 	}
-	
-//	@Override
-//	public void detach() {
-//		super.detach();
-//	}
 
 	public long getId() {
 		return id;

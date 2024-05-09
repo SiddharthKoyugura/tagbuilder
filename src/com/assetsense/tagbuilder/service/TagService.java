@@ -10,6 +10,8 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 public interface TagService extends RemoteService{
 
 	public void saveTag(Tag tag) throws IllegalArgumentException;
-	public void saveTags(List<Tag> tags);
+	public List<Tag> saveTags(List<Tag> tags);
 	public Tag getTagByObservationId(Long observationId);
+	public Tag getTagByName(String tagName);
+	public List<Tag> getTagsByNameSubString(String nameSubString);
 }

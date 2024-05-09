@@ -51,6 +51,7 @@ public class TagDaoImpl implements TagDao {
 		Transaction tx = null;
 		Session session = sessionFactory.openSession();
 		try {
+			Logger.info("start of saveTags");
 			tx = session.beginTransaction();
 			Logger.info("transactionbegin");
 			for (Tag tag : tags) {

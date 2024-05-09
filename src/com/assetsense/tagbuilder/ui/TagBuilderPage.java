@@ -14,10 +14,13 @@ import com.assetsense.tagbuilder.service.AssetService;
 import com.assetsense.tagbuilder.service.AssetServiceAsync;
 import com.assetsense.tagbuilder.service.LookupService;
 import com.assetsense.tagbuilder.service.LookupServiceAsync;
+import com.assetsense.tagbuilder.service.TagService;
+import com.assetsense.tagbuilder.service.TagServiceAsync;
 import com.assetsense.tagbuilder.utils.JsUtil;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.JsonUtils;
 import com.google.gwt.core.shared.GWT;
+import com.google.gwt.dom.client.Style.Overflow;
 import com.google.gwt.dom.client.Style.Unit;
 import com.google.gwt.event.dom.client.ChangeEvent;
 import com.google.gwt.event.dom.client.ChangeHandler;
@@ -52,12 +55,13 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
+import com.google.gwt.user.client.ui.Widget;
 
 public class TagBuilderPage {
 
 	private final AssetServiceAsync assetService = GWT.create(AssetService.class);
 	private final LookupServiceAsync lookupService = GWT.create(LookupService.class);
-	// private final TagServiceAsync tagService = GWT.create(TagService.class);
+	 private final TagServiceAsync tagService = GWT.create(TagService.class);
 
 	private final JsUtil jsUtil = new JsUtil();
 
@@ -118,13 +122,115 @@ public class TagBuilderPage {
 		spanel.getElement().getStyle().setPadding(5, Unit.PX);
 
 		vpanel.add(buildSearchPanel());
-		vpanel.add(buildAssetTree());
+		
+		vpanel.add(buildAssetTagPanels());
 
 		spanel.add(vpanel);
 
 		mainPanel.add(spanel);
 
 		return mainPanel;
+	}
+	
+	private VerticalPanel buildAssetTagPanels() {
+		final VerticalPanel mainPanel = new VerticalPanel();
+		
+		final Tree tree = new Tree();
+		tree.getElement().getStyle().setMarginTop(10, Unit.PX);
+		
+		final ScrollPanel spanel1 = new ScrollPanel();
+		spanel1.setSize("100%", "280px");
+		spanel1.addStyleName("surroundBorder");
+		
+		spanel1.getElement().getStyle().setMarginBottom(10, Unit.PX);
+		
+		final ScrollPanel spanel2 = new ScrollPanel();
+		spanel2.setSize("100%", "300px");
+
+		jsUtil.sendMessageToServer("{\"request\":\"elements\", \"id\":\"\"}", new AsyncCallback<String>() {
+			@Override
+			public void onFailure(Throwable caught) {
+			}
+
+			@Override
+			public void onSuccess(final String result) {
+				lookupService.getMeasurements(new AsyncCallback<List<Measurement>>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+					}
+
+					@Override
+					public void onSuccess(List<Measurement> measurements) {
+						for (Measurement measurement : measurements) {
+							measurementMap.put(measurement.getName(), measurement);
+						}
+						buildAssets(result, tree);
+						spanel1.add(tree);
+						mainPanel.add(spanel1);
+						
+						jsUtil.sendMessageToServer("{\"request\":\"tags\", \"id\":\"\"}", new AsyncCallback<String>(){
+
+							@Override
+							public void onFailure(Throwable caught) {
+								
+							}
+
+							@Override
+							public void onSuccess(String result) {
+								final List<Tag> tags = getTags(result);
+								tagService.saveTags(tags, new AsyncCallback<Void>(){
+
+									@Override
+									public void onFailure(Throwable caught) {
+										
+									}
+
+									@Override
+									public void onSuccess(Void result) {
+										final VerticalPanel vpanel = new VerticalPanel();
+										for(Tag tag: tags) {
+											final Label label = new Label(tag.getName());
+											label.addStyleName("taskLabel");
+											label.getElement().setDraggable("true");
+											label.addClickHandler(new ClickHandler(){
+
+												@Override
+												public void onClick(ClickEvent event) {
+													removeSelectedLabel(vpanel);
+													label.addStyleName("selectedLabel");
+												}
+												
+											});
+											vpanel.add(label);
+										}
+										spanel2.add(vpanel);
+										
+										
+										mainPanel.add(spanel2);
+									}
+									
+								});
+							}
+							
+						});
+					}
+
+				});
+			}
+		});
+		
+		return mainPanel;
+	}
+	
+	private void removeSelectedLabel(VerticalPanel verticalPanel){
+		for (int i = 0; i < verticalPanel.getWidgetCount(); i++) {
+		    Widget widget = verticalPanel.getWidget(i);
+		    if (widget instanceof Label) {
+		        Label label = (Label) widget;
+		        label.removeStyleName("selectedLabel");
+		    }
+		}
 	}
 
 	private HorizontalPanel buildSearchPanel() {
@@ -141,42 +247,22 @@ public class TagBuilderPage {
 
 		return searchPanel;
 	}
-
-	private Tree buildAssetTree() {
-		final Tree tree = new Tree();
-		tree.getElement().getStyle().setMarginTop(10, Unit.PX);
-
-		jsUtil.sendMessageToServer("{\"request\":\"elements\", \"id\":\"\"}", new AsyncCallback<String>() {
-			@Override
-			public void onFailure(Throwable caught) {
-				// Handle failure
+	
+	private List<Tag> getTags(String data){
+		List<Tag> tags = new ArrayList<>();
+		if(data != null) {
+			JavaScriptObject jsArray = JsonUtils.safeEval(data);
+			for(int i=0; i<jsUtil.getArrayLength(jsArray); i++){
+				Tag tag = new Tag();
+				JavaScriptObject piPoint = jsUtil.getArrayElement(jsArray, i);
+				String name = jsUtil.getValueAsString(piPoint, "Name");
+				tag.setName(name);
+				tags.add(tag);
 			}
-
-			@Override
-			public void onSuccess(final String result) {
-				// renderTree(getElements(result), tree);
-				lookupService.getMeasurements(new AsyncCallback<List<Measurement>>() {
-
-					@Override
-					public void onFailure(Throwable caught) {
-						// TODO Auto-generated method stub
-
-					}
-
-					@Override
-					public void onSuccess(List<Measurement> measurements) {
-						for (Measurement measurement : measurements) {
-							measurementMap.put(measurement.getName(), measurement);
-						}
-						getAssets(result, tree);
-					}
-
-				});
-			}
-		});
-
-		return tree;
+		}
+		return tags;
 	}
+
 
 	private void renderTree(List<Asset> assets, Tree tree) {
 		for (final Asset asset : assets) {
@@ -776,7 +862,7 @@ public class TagBuilderPage {
 
 			@Override
 			public void onSuccess(List<Lookup> lookups) {
-				if(asset.getLocation() == null){
+				if (asset.getLocation() == null) {
 					locationField.addItem("<Select>");
 				}
 				for (Lookup lookup : lookups) {
@@ -1022,6 +1108,19 @@ public class TagBuilderPage {
 		mainPanel.add(hpanel);
 		mainPanel.add(buildObservationTable());
 
+		return mainPanel;
+	}
+
+	private VerticalPanel buildAssetTable() {
+		VerticalPanel mainPanel = new VerticalPanel();
+		mainPanel.setWidth("100%");
+		mainPanel.setHeight("300px");
+		mainPanel.getElement().getStyle().setBackgroundColor("#D9D9D9");
+		mainPanel.getElement().getStyle().setProperty("border", "1px solid black");
+
+		assetTable = new FlexTable();
+		assetTable.setWidth("100%");
+		
 		mainPanel.addDomHandler(new DragOverHandler() {
 
 			@Override
@@ -1040,19 +1139,6 @@ public class TagBuilderPage {
 			}
 
 		}, DropEvent.getType());
-
-		return mainPanel;
-	}
-
-	private VerticalPanel buildAssetTable() {
-		VerticalPanel mainPanel = new VerticalPanel();
-		mainPanel.setWidth("100%");
-		mainPanel.setHeight("300px");
-		mainPanel.getElement().getStyle().setBackgroundColor("#D9D9D9");
-		mainPanel.getElement().getStyle().setProperty("border", "1px solid black");
-
-		assetTable = new FlexTable();
-		assetTable.setWidth("100%");
 
 		assetTable.getElement().getStyle().setProperty("borderCollapse", "collapse");
 		assetTable.setStyleName("table-padding tableStyle");
@@ -1303,7 +1389,7 @@ public class TagBuilderPage {
 		}
 	}
 
-	private void getAssets(String data, final Tree tree) {
+	private void buildAssets(String data, final Tree tree) {
 
 		if (data != null) {
 			JavaScriptObject jsArray = JsonUtils.safeEval(data);

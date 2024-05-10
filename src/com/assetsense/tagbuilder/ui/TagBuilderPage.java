@@ -91,7 +91,7 @@ public class TagBuilderPage {
 		splitLayoutPanel.addStyleName("mySplitLayoutPanel");
 
 		splitLayoutPanel.addNorth(buildNavbar(), 48);
-		splitLayoutPanel.addWest(buildLeftSidebar(), 200);
+		splitLayoutPanel.addWest(buildLeftSidebar(), 300);
 
 		splitLayoutPanel.add(buildDetailsDashboard());
 
@@ -116,17 +116,11 @@ public class TagBuilderPage {
 
 		VerticalPanel vpanel = new VerticalPanel();
 
-		ScrollPanel spanel = new ScrollPanel();
-		spanel.setSize("100%", "100%");
-		spanel.getElement().getStyle().setPadding(5, Unit.PX);
-
 		vpanel.add(buildSearchPanel());
 
 		vpanel.add(buildAssetTagPanels());
 
-		spanel.add(vpanel);
-
-		mainPanel.add(spanel);
+		mainPanel.add(vpanel);
 
 		return mainPanel;
 	}
@@ -138,13 +132,14 @@ public class TagBuilderPage {
 		tree.getElement().getStyle().setMarginTop(10, Unit.PX);
 
 		final ScrollPanel spanel1 = new ScrollPanel();
-		spanel1.setSize("100%", "280px");
+		spanel1.setSize("300px", "280px");
 		spanel1.addStyleName("surroundBorder");
 
 		spanel1.getElement().getStyle().setMarginBottom(10, Unit.PX);
 
 		final ScrollPanel spanel2 = new ScrollPanel();
-		spanel2.setSize("100%", "300px");
+		spanel2.setSize("300px", "300px");
+		spanel2.getElement().getStyle().setPadding(10, Unit.PX);
 
 		final HorizontalPanel searchPanel = new HorizontalPanel();
 		searchPanel.setWidth("100%");
@@ -1162,12 +1157,12 @@ public class TagBuilderPage {
 			}
 
 		});
-		
+
 		Button clearBtn = new Button("Clear");
 
 		clearBtn.getElement().getStyle().setMarginLeft(20, Unit.PX);
-		
-		clearBtn.addClickHandler(new ClickHandler(){
+
+		clearBtn.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				resetTable(assetTable);
@@ -1205,18 +1200,20 @@ public class TagBuilderPage {
 
 	private void updateTablesFromTagDrop(Tag tag) {
 		if (tag != null) {
-			updateTagTable(tag);
-
-			updateObservationTable();
-
 			int assetRow = assetTable.getRowCount();
+			Asset asset = new Asset();
 			if (assetRow == 2) {
-				updateAssetTable(assetRow);
+				updateAssetTable(assetRow, asset);
+				updateObservationTable();
+				updateTagTable(tag, asset);
+			}else{
+				updateObservationTable();
+				updateTagTable(tag, selectedAsset);
 			}
 		}
 	}
 
-	private void updateAssetTable(int row) {
+	private void updateAssetTable(int row, Asset asset) {
 
 		final TextBox ecnField = new TextBox();
 
@@ -1234,38 +1231,50 @@ public class TagBuilderPage {
 
 		TextBox assetField = new TextBox();
 
+		if (asset.getEcn() != null) {
+			ecnField.setText(asset.getEcn());
+		}
+		if (asset.getName() != null) {
+			assetField.setText(asset.getName());
+		}
+
 		assetTable.setWidget(row, 0, ecnField);
 		assetTable.setWidget(row, 1, assetField);
-		assetTable.setWidget(row, 2, getModelField(null));
-		assetTable.setWidget(row, 3, getLocationField(null));
+		assetTable.setWidget(row, 2, getModelField(asset));
+		assetTable.setWidget(row, 3, getLocationField(asset));
 
 		assetTable.getRowFormatter().addStyleName(row, "selectedRow");
 
+		selectedAsset = asset;
 		selectedAssetRow = row;
 		setCursorPointer(assetTable, row);
 	}
 
-	private void updateTagTable(Tag tag) {
+	private void updateTagTable(Tag tag, Asset asset) {
 		int row = tagTable.getRowCount();
-			String ecn = (tag.getAsset() != null && tag.getAsset().getEcn() != null
-					&& tag.getAsset().getEcn().length() > 0) ? tag.getAsset().getEcn() : "";
+		String ecn = (tag.getAsset() != null && tag.getAsset().getEcn() != null && tag.getAsset().getEcn().length() > 0)
+				? tag.getAsset().getEcn() : "";
 
-			Observation observation = tag.getObservation();
-			String code = (observation != null && observation.getCode() != null && !observation.getCode().isEmpty())
-					? observation.getCode() : "";
+		Observation observation = new Observation();
+		observation.setTag(tag);
+		
+		String code = (observation != null && observation.getCode() != null && !observation.getCode().isEmpty())
+				? observation.getCode() : "";
 
-			String tagName = tag.getName();
+		String tagName = tag.getName();
 
-			TextBox tagNameField = new TextBox();
-			tagNameField.setWidth("80%");
-			tagNameField.setText(tagName);
+		TextBox tagNameField = new TextBox();
+		tagNameField.setWidth("80%");
+		tagNameField.setText(tagName);
 
-			tagTable.setText(row, 0, ecn);
-			tagTable.setText(row, 1, code);
-			tagTable.setWidget(row, 2, tagNameField);
+		tagTable.setText(row, 0, ecn);
+		tagTable.setText(row, 1, code);
+		tagTable.setWidget(row, 2, tagNameField);
 		tagTable.getRowFormatter().addStyleName(row, "selectedRow");
 
 		setCursorPointer(tagTable, row);
+		
+		asset.getObservations().add(observation);
 	}
 
 	private void updateObservationTable() {
@@ -1558,117 +1567,112 @@ public class TagBuilderPage {
 	}
 
 	private void saveFields() {
-		final int row = selectedRow;
-		final FlexTable table = selectedTable;
+		int row = selectedAssetRow;
 
-		if (table == assetTable) {
-			String ecn = ((TextBox) table.getWidget(row, 0)).getText();
-			String assetName = ((TextBox) table.getWidget(row, 1)).getText();
-			String modelName = ((ListBox) ((HorizontalPanel) table.getWidget(row, 2)).getWidget(0)).getSelectedValue();
-			String location = ((ListBox) ((HorizontalPanel) table.getWidget(row, 3)).getWidget(0)).getSelectedValue();
+		String ecn = ((TextBox) assetTable.getWidget(row, 0)).getText();
+		String assetName = ((TextBox) assetTable.getWidget(row, 1)).getText();
+		String modelName = ((ListBox) ((HorizontalPanel) assetTable.getWidget(row, 2)).getWidget(0)).getSelectedValue();
+		String location = ((ListBox) ((HorizontalPanel) assetTable.getWidget(row, 3)).getWidget(0)).getSelectedValue();
 
-			ecn = ecn.length() > 0 ? ecn : null;
-			assetName = assetName.length() > 0 ? assetName : null;
+		ecn = ecn.length() > 0 ? ecn : null;
+		assetName = assetName.length() > 0 ? assetName : null;
 
-			selectedAsset.setEcn(ecn);
-			selectedAsset.setName(assetName);
+		selectedAsset.setEcn(ecn);
+		selectedAsset.setName(assetName);
 
-			List<String> lookupNames = new ArrayList<>();
-			lookupNames.add(location);
-			lookupNames.add(modelName);
+		List<String> lookupNames = new ArrayList<>();
+		lookupNames.add(location);
+		lookupNames.add(modelName);
 
-			lookupService.getLookupsByNames(lookupNames, new AsyncCallback<List<Lookup>>() {
-
-				@Override
-				public void onFailure(Throwable caught) {
-				}
-
-				@Override
-				public void onSuccess(List<Lookup> lookups) {
-					selectedAsset.setLocation(lookups.get(0));
-					selectedAsset.setModel(lookups.get(1));
-
-					updateAsset(selectedAsset);
-				}
-
-			});
-
-		} else if (table == obsTable) {
-
-			String code = ((TextBox) table.getWidget(row, 0)).getText();
-			String description = ((TextBox) table.getWidget(row, 1)).getText();
-			final String inputType = ((ListBox) table.getWidget(row, 2)).getSelectedValue();
-			final String measurement = ((ListBox) table.getWidget(row, 3)).getSelectedValue();
-			final String units = ((ListBox) table.getWidget(row, 4)).getSelectedValue();
-
-			TextBox lowerLimitField = (TextBox) table.getWidget(row, 5);
-			TextBox upperLimitField = (TextBox) table.getWidget(row, 6);
-			final String lowerLimitString = lowerLimitField != null ? lowerLimitField.getText() : "";
-			final String upperLimitString = upperLimitField != null ? upperLimitField.getText() : "";
-
-			code = code.length() > 0 ? code : null;
-
-			final Observation observation = selectedAsset.getObservations().get(row - 2);
-			observation.setCode(code);
-			observation.setDescription(description);
-			final Double lowerLimit = lowerLimitString.isEmpty() ? null : Double.parseDouble(lowerLimitString);
-			final Double upperLimit = upperLimitString.isEmpty() ? null : Double.parseDouble(upperLimitString);
-			observation.setLowerLimit(lowerLimit);
-			observation.setUpperLimit(upperLimit);
-
-			lookupService.getLookupByName(inputType, new AsyncCallback<Lookup>() {
-
-				@Override
-				public void onFailure(Throwable caught) {
-					// TODO Auto-generated method stub
-
-				}
-
-				@Override
-				public void onSuccess(Lookup inputTypeLookup) {
-					observation.setInputType(inputTypeLookup);
-					if (!measurement.equals("<Select>")) {
-						observation.setMeasurement(measurementMap.get(measurement));
-						lookupService.getLookupByName(units, new AsyncCallback<Lookup>() {
-
-							@Override
-							public void onFailure(Throwable caught) {
-								// TODO Auto-generated method stub
-
-							}
-
-							@Override
-							public void onSuccess(Lookup unit) {
-								observation.setUnitid(unit);
-								updateAsset(selectedAsset);
-							}
-						});
-					} else {
-						updateAsset(selectedAsset);
-					}
-				}
-
-			});
-
-		} else if (table == tagTable) {
-			String tag = ((TextBox) table.getWidget(row, 2)).getText();
-
-			final Observation observation = selectedAsset.getObservations().get(row - 2);
-			observation.getTag().setName(tag);
-			updateAsset(selectedAsset);
-		}
-
-	}
-
-	private void updateAsset(Asset asset) {
-		assetService.updateAsset(asset, new AsyncCallback<Void>() {
+		lookupService.getLookupsByNames(lookupNames, new AsyncCallback<List<Lookup>>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
 			}
 
 			@Override
+			public void onSuccess(List<Lookup> lookups) {
+				if (lookups.size() > 1) {
+					selectedAsset.setLocation(lookups.get(0));
+					selectedAsset.setModel(lookups.get(1));
+				}
+
+				for (int row = 2; row < obsTable.getRowCount(); row++) {
+					String code = ((TextBox) obsTable.getWidget(row, 0)).getText();
+					String description = ((TextBox) obsTable.getWidget(row, 1)).getText();
+					final String inputType = ((ListBox) obsTable.getWidget(row, 2)).getSelectedValue();
+					final String measurement = ((ListBox) obsTable.getWidget(row, 3)).getSelectedValue();
+					final String units = ((ListBox) obsTable.getWidget(row, 4)).getSelectedValue();
+
+					TextBox lowerLimitField = (TextBox) obsTable.getWidget(row, 5);
+					TextBox upperLimitField = (TextBox) obsTable.getWidget(row, 6);
+					final String lowerLimitString = lowerLimitField != null ? lowerLimitField.getText() : "";
+					final String upperLimitString = upperLimitField != null ? upperLimitField.getText() : "";
+
+					code = code.length() > 0 ? code : null;
+
+					final Observation observation = selectedAsset.getObservations().get(row - 2);
+					observation.setCode(code);
+					observation.setDescription(description);
+					final Double lowerLimit = lowerLimitString.isEmpty() ? null : Double.parseDouble(lowerLimitString);
+					final Double upperLimit = upperLimitString.isEmpty() ? null : Double.parseDouble(upperLimitString);
+					observation.setLowerLimit(lowerLimit);
+					observation.setUpperLimit(upperLimit);
+
+					String tag = ((TextBox) tagTable.getWidget(row, 2)).getText();
+
+					observation.getTag().setName(tag);
+
+					lookupService.getLookupByName(inputType, new AsyncCallback<Lookup>() {
+
+						@Override
+						public void onFailure(Throwable caught) {
+
+						}
+
+						@Override
+						public void onSuccess(Lookup inputTypeLookup) {
+							observation.setInputType(inputTypeLookup);
+							if (!measurement.equals("<Select>")) {
+								observation.setMeasurement(measurementMap.get(measurement));
+								lookupService.getLookupByName(units, new AsyncCallback<Lookup>() {
+
+									@Override
+									public void onFailure(Throwable caught) {
+										// TODO Auto-generated method stub
+
+									}
+
+									@Override
+									public void onSuccess(Lookup unit) {
+										observation.setUnitid(unit);
+										updateAsset(selectedAsset);
+
+									}
+								});
+							} else {
+								updateAsset(selectedAsset);
+							}
+						}
+
+					});
+				}
+			}
+
+		});
+	}
+
+	private void updateAsset(Asset asset) {
+		assetService.saveAsset(asset, new AsyncCallback<Void>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+				Window.alert("Failure");
+			}
+
+			@Override
 			public void onSuccess(Void result) {
+				Window.alert("Success");
 			}
 
 		});

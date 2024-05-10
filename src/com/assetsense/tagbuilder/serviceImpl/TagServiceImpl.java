@@ -33,12 +33,12 @@ public class TagServiceImpl extends RemoteServiceServlet implements TagService {
 	public List<Tag> saveTags(List<Tag> tags) {
 		tagDao = (TagDaoImpl) ApplicationContextListener.applicationContext.getBean("tagDaoImpl");
 		List<Tag> tagsInDB = tagDao.saveTags(tags);
-		for(Tag tag: tagsInDB){
+		for (Tag tag : tagsInDB) {
 			tag.detach();
-			if(tag.getObservation() != null){
+			if (tag.getObservation() != null) {
 				tag.getObservation().detach();
 			}
-			if(tag.getAsset() != null){
+			if (tag.getAsset() != null) {
 				tag.getAsset().detach();
 			}
 		}
@@ -61,12 +61,28 @@ public class TagServiceImpl extends RemoteServiceServlet implements TagService {
 	public List<Tag> getTagsByNameSubString(String nameSubString) {
 		tagDao = (TagDaoImpl) ApplicationContextListener.applicationContext.getBean("tagDaoImpl");
 		List<Tag> tags = tagDao.getTagsByNameSubString(nameSubString);
-		for(Tag tag: tags){
+		for (Tag tag : tags) {
 			tag.detach();
-			if(tag.getObservation() != null){
+			if (tag.getObservation() != null) {
 				tag.getObservation().detach();
 			}
-			if(tag.getAsset() != null){
+			if (tag.getAsset() != null) {
+				tag.getAsset().detach();
+			}
+		}
+		return tags;
+	}
+
+	@Override
+	public List<Tag> getTagsByNames(List<String> names) {
+		tagDao = (TagDaoImpl) ApplicationContextListener.applicationContext.getBean("tagDaoImpl");
+		List<Tag> tags = tagDao.getTagsByNames(names);
+		for (Tag tag : tags) {
+			tag.detach();
+			if (tag.getObservation() != null) {
+				tag.getObservation().detach();
+			}
+			if (tag.getAsset() != null) {
 				tag.getAsset().detach();
 			}
 		}

@@ -15,5 +15,7 @@ public interface TagServiceAsync {
 	
 	void getTagByName(String tagName, AsyncCallback<Tag> callback);
 	
+	void getTagsByNames(List<String> names, AsyncCallback<List<Tag>> callback);
+	
 	void getTagsByNameSubString(String nameSubString, AsyncCallback<List<Tag>> callback);
 }

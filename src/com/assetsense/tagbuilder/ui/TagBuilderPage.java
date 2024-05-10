@@ -2,8 +2,10 @@ package com.assetsense.tagbuilder.ui;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.assetsense.tagbuilder.c2.domain.Asset;
 import com.assetsense.tagbuilder.c2.domain.Lookup;
@@ -54,7 +56,6 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.Tree;
 import com.google.gwt.user.client.ui.TreeItem;
 import com.google.gwt.user.client.ui.VerticalPanel;
-import com.google.gwt.user.client.ui.Widget;
 
 public class TagBuilderPage {
 
@@ -68,14 +69,13 @@ public class TagBuilderPage {
 	private FlexTable obsTable;
 	private FlexTable tagTable;
 
-	private FlexTable selectedTable = null;
-	private int selectedRow;
 	private Asset selectedAsset = null;
-
 	private int selectedAssetRow = 0;
 
 	private TextBox supplierNameField;
 	private ListBox supplierField;
+
+	private Set<Label> selectedLabels = new HashSet<Label>();
 
 	private final Map<String, Measurement> measurementMap = new HashMap<String, Measurement>();
 
@@ -176,8 +176,13 @@ public class TagBuilderPage {
 
 								@Override
 								public void onClick(ClickEvent event) {
-									removeSelectedLabel(vpanel);
-									label.addStyleName("selectedLabel");
+									if (selectedLabels.contains(label)) {
+										label.removeStyleName("selectedLabel");
+										selectedLabels.remove(label);
+									} else {
+										label.addStyleName("selectedLabel");
+										selectedLabels.add(label);
+									}
 								}
 
 							});
@@ -251,8 +256,13 @@ public class TagBuilderPage {
 
 												@Override
 												public void onClick(ClickEvent event) {
-													removeSelectedLabel(vpanel);
-													label.addStyleName("selectedLabel");
+													if (selectedLabels.contains(label)) {
+														label.removeStyleName("selectedLabel");
+														selectedLabels.remove(label);
+													} else {
+														label.addStyleName("selectedLabel");
+														selectedLabels.add(label);
+													}
 												}
 
 											});
@@ -284,16 +294,6 @@ public class TagBuilderPage {
 		});
 
 		return mainPanel;
-	}
-
-	private void removeSelectedLabel(VerticalPanel verticalPanel) {
-		for (int i = 0; i < verticalPanel.getWidgetCount(); i++) {
-			Widget widget = verticalPanel.getWidget(i);
-			if (widget instanceof Label) {
-				Label label = (Label) widget;
-				label.removeStyleName("selectedLabel");
-			}
-		}
 	}
 
 	private HorizontalPanel buildSearchPanel() {
@@ -417,16 +417,8 @@ public class TagBuilderPage {
 
 				updateObsAndTagTable(asset.getName());
 
-				if (selectedTable == assetTable) {
-					selectedTable.getRowFormatter().removeStyleName(selectedAssetRow, "selectedRow");
-				}
-
 				selectedAssetRow = row;
 
-				selectedTable = assetTable;
-				selectedRow = row;
-
-				resetTableStates();
 			}
 
 		});
@@ -1168,7 +1160,6 @@ public class TagBuilderPage {
 				resetTable(assetTable);
 				resetTable(obsTable);
 				resetTable(tagTable);
-				resetTableStates();
 			}
 		});
 
@@ -1206,7 +1197,7 @@ public class TagBuilderPage {
 				updateAssetTable(assetRow, asset);
 				updateObservationTable();
 				updateTagTable(tag, asset);
-			}else{
+			} else {
 				updateObservationTable();
 				updateTagTable(tag, selectedAsset);
 			}
@@ -1257,7 +1248,7 @@ public class TagBuilderPage {
 
 		Observation observation = new Observation();
 		observation.setTag(tag);
-		
+
 		String code = (observation != null && observation.getCode() != null && !observation.getCode().isEmpty())
 				? observation.getCode() : "";
 
@@ -1273,7 +1264,7 @@ public class TagBuilderPage {
 		tagTable.getRowFormatter().addStyleName(row, "selectedRow");
 
 		setCursorPointer(tagTable, row);
-		
+
 		asset.getObservations().add(observation);
 	}
 
@@ -1338,7 +1329,6 @@ public class TagBuilderPage {
 
 			@Override
 			public void onFailure(Throwable caught) {
-				// TODO Auto-generated method stub
 
 			}
 
@@ -1457,7 +1447,12 @@ public class TagBuilderPage {
 				if (tagName == null || tagName.isEmpty()) {
 					return;
 				}
-				tagService.getTagByName(tagName, new AsyncCallback<Tag>() {
+				List<String> tagNames = new ArrayList<>();
+				for(Label label : selectedLabels){
+					tagNames.add(label.getText());
+					label.removeStyleName("selectedLabel");
+				}
+				tagService.getTagsByNames(tagNames, new AsyncCallback<List<Tag>>() {
 
 					@Override
 					public void onFailure(Throwable caught) {
@@ -1465,8 +1460,11 @@ public class TagBuilderPage {
 					}
 
 					@Override
-					public void onSuccess(Tag tag) {
-						updateTablesFromTagDrop(tag);
+					public void onSuccess(List<Tag> tags) {
+						for(Tag tag: tags){
+							updateTablesFromTagDrop(tag);
+						}
+						selectedLabels.clear();
 					}
 
 				});
@@ -1551,14 +1549,7 @@ public class TagBuilderPage {
 		});
 	}
 
-	private void resetTableStates() {
-		selectedTable = null;
-		selectedRow = 0;
-	}
-
 	private void handleSelection(FlexTable table, int row) {
-		selectedTable = table;
-		selectedRow = row;
 		if (table == assetTable && selectedAssetRow != row) {
 			String assetName = ((TextBox) assetTable.getWidget(row, 1)).getText();
 			updateObsAndTagTable(assetName);
@@ -1646,17 +1637,14 @@ public class TagBuilderPage {
 									@Override
 									public void onSuccess(Lookup unit) {
 										observation.setUnitid(unit);
-										updateAsset(selectedAsset);
-
 									}
 								});
-							} else {
-								updateAsset(selectedAsset);
 							}
 						}
 
 					});
 				}
+				updateAsset(selectedAsset);
 			}
 
 		});
@@ -1667,12 +1655,10 @@ public class TagBuilderPage {
 
 			@Override
 			public void onFailure(Throwable caught) {
-				Window.alert("Failure");
 			}
 
 			@Override
 			public void onSuccess(Void result) {
-				Window.alert("Success");
 			}
 
 		});

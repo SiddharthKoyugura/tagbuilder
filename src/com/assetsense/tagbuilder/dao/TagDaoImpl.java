@@ -1,5 +1,6 @@
 package com.assetsense.tagbuilder.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -143,7 +144,8 @@ public class TagDaoImpl implements TagDao {
 			tx = session.beginTransaction();
 			Query<Tag> query = null;
 			if (!nameSubString.isEmpty()) {
-				query = session.createQuery("FROM Tag WHERE asset IS NULL AND LOWER(name) LIKE :nameSubString", Tag.class);
+				query = session.createQuery("FROM Tag WHERE asset IS NULL AND LOWER(name) LIKE :nameSubString",
+						Tag.class);
 				query.setParameter("nameSubString", "%" + nameSubString + "%");
 			} else {
 				query = session.createQuery("from Tag where asset IS NULL", Tag.class);
@@ -167,6 +169,31 @@ public class TagDaoImpl implements TagDao {
 		query.setParameter("name", name);
 		Long count = query.uniqueResult();
 		return count == 0; // ID is unique if count is 0
+	}
+
+	@Override
+	public List<Tag> getTagsByNames(List<String> names) {
+		List<Tag> tags = new ArrayList<>();
+		Transaction tx = null;
+		Session session = sessionFactory.openSession();
+		try {
+			tx = session.beginTransaction();
+			for (String tagName : names) {
+				Query<Tag> query = session.createQuery("FROM Tag WHERE name=:name", Tag.class);
+				query.setParameter("name", tagName);
+				tags.add(query.uniqueResult());
+			}
+			tx.commit();
+		} catch (HibernateException e) {
+			if (tx != null) {
+				tx.rollback();
+			}
+			e.printStackTrace();
+		} finally {
+			session.close();
+		}
+
+		return tags;
 	}
 
 }

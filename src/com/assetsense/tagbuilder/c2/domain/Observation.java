@@ -16,11 +16,15 @@ public class Observation extends PersistantObject implements Serializable {
 	private Measurement measurement;
 	private Lookup unitid;
 	private Tag tag;
-	
+	private Double lowerLimit;
+	private Double upperLimit;
+
 	@Override
 	public void detach() {
 		super.detach();
-//		tag.detach();
+		if (tag != null) {
+			tag.detach();
+		}
 	}
 
 	public long getId() {
@@ -85,6 +89,29 @@ public class Observation extends PersistantObject implements Serializable {
 
 	public void setTag(Tag tag) {
 		this.tag = tag;
+	}
+
+	public Double getLowerLimit() {
+		return lowerLimit;
+	}
+
+	public void setLowerLimit(Double lowerLimit) {
+		this.lowerLimit = lowerLimit;
+	}
+
+	public Double getUpperLimit() {
+		return upperLimit;
+	}
+
+	public void setUpperLimit(Double upperLimit) {
+		this.upperLimit = upperLimit;
+	}
+
+	@Override
+	public String toString() {
+		return "Observation [id=" + id + ", code=" + code + ", inputType=" + inputType + ", description=" + description
+				+ ", category=" + category + ", measurement=" + measurement + ", unitid=" + unitid + ", tag=" + tag
+				+ "]";
 	}
 
 }

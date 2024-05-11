@@ -2,6 +2,7 @@ package com.assetsense.tagbuilder.dao;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -33,6 +34,9 @@ public class AssetDaoImpl implements AssetDao {
 		try {
 			tx = session.beginTransaction();
 			Logger.info("transactionbegin");
+			if(asset.getId() == null){
+				asset.setId(UUID.randomUUID().toString());
+			}
 			if (!isIdUnique(session, asset.getId())) {
 				session.update(asset);
 			} else {

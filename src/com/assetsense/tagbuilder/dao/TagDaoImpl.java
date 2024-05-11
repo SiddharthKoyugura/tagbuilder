@@ -47,23 +47,33 @@ public class TagDaoImpl implements TagDao {
 	}
 
 	@Override
-	public void saveTags(List<Tag> tags) {
+	public List<Tag> saveTags(List<Tag> tags) {
+		List<Tag> tagsInDB = null;
+
 		Transaction tx = null;
 		Session session = sessionFactory.openSession();
 		try {
+			Logger.info("start of saveTags");
 			tx = session.beginTransaction();
 			Logger.info("transactionbegin");
 			for (Tag tag : tags) {
 				try {
-					session.save(tag);
-					tx.commit();
-				} catch (Exception e) {
+					if (isNameUnique(session, tag.getName())) {
+						session.save(tag);
+					}
+				} catch (HibernateException e) {
 					if (tx != null) {
 						tx.rollback();
 					}
 				}
 			}
+			tx.commit();
+
+			Query<Tag> query = session.createQuery("from Tag where asset IS NULL", Tag.class);
+			tagsInDB = query.getResultList();
+
 			Logger.info("transcation completed");
+
 		} catch (HibernateException e) {
 			if (tx != null) {
 				tx.rollback();
@@ -73,6 +83,8 @@ public class TagDaoImpl implements TagDao {
 			session.close();
 		}
 		Logger.info("end of save tags");
+
+		return tagsInDB;
 	}
 
 	@Override
@@ -96,6 +108,65 @@ public class TagDaoImpl implements TagDao {
 		}
 
 		return tag;
+	}
+
+	@Override
+	public Tag getTagByName(String tagName) {
+		Tag tag = null;
+		Transaction tx = null;
+		Session session = sessionFactory.openSession();
+		try {
+			tx = session.beginTransaction();
+			Query<Tag> query = session.createQuery("FROM Tag WHERE name=:name", Tag.class);
+			query.setParameter("name", tagName);
+			tag = query.uniqueResult();
+			tx.commit();
+		} catch (HibernateException e) {
+			if (tx != null) {
+				tx.rollback();
+			}
+			e.printStackTrace();
+		} finally {
+			session.close();
+		}
+
+		return tag;
+	}
+
+	@Override
+	public List<Tag> getTagsByNameSubString(String nameSubString) {
+		nameSubString = nameSubString.toLowerCase();
+		List<Tag> tags = null;
+		Transaction tx = null;
+		Session session = sessionFactory.openSession();
+		try {
+			tx = session.beginTransaction();
+			Query<Tag> query = null;
+			if (!nameSubString.isEmpty()) {
+				query = session.createQuery("FROM Tag WHERE asset IS NULL AND LOWER(name) LIKE :nameSubString", Tag.class);
+				query.setParameter("nameSubString", "%" + nameSubString + "%");
+			} else {
+				query = session.createQuery("from Tag where asset IS NULL", Tag.class);
+			}
+			tags = query.getResultList();
+			tx.commit();
+		} catch (HibernateException e) {
+			if (tx != null) {
+				tx.rollback();
+			}
+			e.printStackTrace();
+		} finally {
+			session.close();
+		}
+
+		return tags;
+	}
+
+	private boolean isNameUnique(Session session, String name) {
+		Query<Long> query = session.createQuery("select count(*) from Tag where name = :name", Long.class);
+		query.setParameter("name", name);
+		Long count = query.uniqueResult();
+		return count == 0; // ID is unique if count is 0
 	}
 
 }

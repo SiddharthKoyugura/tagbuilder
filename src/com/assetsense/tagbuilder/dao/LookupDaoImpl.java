@@ -177,4 +177,35 @@ public class LookupDaoImpl implements LookupDao {
 		return lookups;
 	}
 
+	@Override
+	public List<Lookup> getLookupsByNames(List<String> names) {
+		Transaction tx = null;
+		Session session = sessionFactory.openSession();
+		List<Lookup> lookups = new ArrayList<>();
+		try {
+			tx = session.beginTransaction();
+			for (String name : names) {
+				Query<Lookup> query = (Query<Lookup>) session.createQuery("from Lookup where name=:name", Lookup.class);
+				query.setParameter("name", name);
+				if (query.getResultList().size() > 0) {
+					if (query.getResultList().size() > 0) {
+						Lookup lookup = query.getResultList().get(0);
+						lookups.add(lookup);
+					}else{
+						lookups.add(null);
+					}
+				}
+			}
+			tx.commit();
+		} catch (HibernateException e) {
+			if (tx != null) {
+				tx.rollback();
+			}
+			e.printStackTrace();
+		} finally {
+			session.close();
+		}
+		return lookups;
+	}
+
 }

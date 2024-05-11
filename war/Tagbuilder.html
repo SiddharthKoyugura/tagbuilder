@@ -17,8 +17,10 @@
     const ws = new WebSocket("ws://10.10.10.11:8000/");
 
     var callback;
+    var isOpen = false;
 
     ws.onopen = function () {
+      isOpen = true;
       // ws.send(JSON.stringify({ request: "elementsHierarchy", id: "" }));
     };
 
@@ -30,10 +32,18 @@
     };
 
     ws.onclose = function () {
+      isOpen = false;
       console.log("Socket closed");
     };
 
-    function sendMessageToServer(message, cb) {
+    const sleep = (milliseconds) => {
+      return new Promise(resolve => setTimeout(resolve, milliseconds))
+    }
+
+    async function sendMessageToServer(message, cb) {
+      if(!isOpen){
+        await sleep(1500);
+      }
       callback = cb;
       elementsData = null;
       console.log(message);

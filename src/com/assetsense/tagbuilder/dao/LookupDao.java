@@ -17,5 +17,7 @@ public interface LookupDao {
 	
 	Lookup getLookupByName(String name);
 	
+	List<Lookup> getLookupsByNames(List<String> names);
+	
 	List<Lookup> getLookupByMeasurementName(String measurement);
 }

@@ -1266,11 +1266,35 @@ public class TagBuilderPage {
 		if (asset.getName() != null) {
 			assetField.setText(asset.getName());
 		}
+		
+		// Delete Button
+		Button removeRowBtn = new Button("-");
+
+		removeRowBtn.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				int row = getAssetTableRowByAssetName("");
+				assetTable.removeRow(row);
+				if (row == selectedAssetRow) {
+					resetTable(obsTable);
+					resetTable(tagTable);
+
+					if (assetTable.getRowCount() > 2) {
+						selectedAssetRow = 2;
+						updateObsAndTagTable(((TextBox) assetTable.getWidget(selectedAssetRow, 1)).getText());
+					}
+
+				} else if (row < selectedAssetRow) {
+					selectedAssetRow--;
+				}
+			}
+		});
 
 		assetTable.setWidget(row, 0, ecnField);
 		assetTable.setWidget(row, 1, assetField);
 		assetTable.setWidget(row, 2, getModelField(asset));
 		assetTable.setWidget(row, 3, getLocationField(asset));
+		assetTable.setWidget(row, 4, removeRowBtn);
 
 		assetTable.getRowFormatter().addStyleName(row, "selectedRow");
 

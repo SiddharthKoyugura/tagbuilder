@@ -75,7 +75,9 @@ public class TagBuilderPage {
 	private TextBox supplierNameField;
 	private ListBox supplierField;
 
-	private Set<Label> selectedLabels = new HashSet<Label>();
+	private Set<Label> selectedTagLabels = new HashSet<Label>();
+
+	private Label messageLabel;
 
 	private final Map<String, Measurement> measurementMap = new HashMap<String, Measurement>();
 
@@ -176,12 +178,12 @@ public class TagBuilderPage {
 
 								@Override
 								public void onClick(ClickEvent event) {
-									if (selectedLabels.contains(label)) {
+									if (selectedTagLabels.contains(label)) {
 										label.removeStyleName("selectedLabel");
-										selectedLabels.remove(label);
+										selectedTagLabels.remove(label);
 									} else {
 										label.addStyleName("selectedLabel");
-										selectedLabels.add(label);
+										selectedTagLabels.add(label);
 									}
 								}
 
@@ -256,12 +258,12 @@ public class TagBuilderPage {
 
 												@Override
 												public void onClick(ClickEvent event) {
-													if (selectedLabels.contains(label)) {
+													if (selectedTagLabels.contains(label)) {
 														label.removeStyleName("selectedLabel");
-														selectedLabels.remove(label);
+														selectedTagLabels.remove(label);
 													} else {
 														label.addStyleName("selectedLabel");
-														selectedLabels.add(label);
+														selectedTagLabels.add(label);
 													}
 												}
 
@@ -377,7 +379,7 @@ public class TagBuilderPage {
 
 			@Override
 			public void onFailure(Throwable caught) {
-
+				Window.alert("Validation error");
 			}
 
 			@Override
@@ -403,13 +405,37 @@ public class TagBuilderPage {
 				});
 
 				TextBox assetField = new TextBox();
-				String assetName = asset.getName();
+				final String assetName = asset.getName();
 				assetField.setText(assetName);
+
+				// Delete Button
+				Button removeRowBtn = new Button("-");
+
+				removeRowBtn.addClickHandler(new ClickHandler() {
+					@Override
+					public void onClick(ClickEvent event) {
+						int row = getAssetTableRowByAssetName(assetName);
+						assetTable.removeRow(row);
+						if (row == selectedAssetRow) {
+							resetTable(obsTable);
+							resetTable(tagTable);
+
+							if (assetTable.getRowCount() > 2) {
+								selectedAssetRow = 2;
+								updateObsAndTagTable(((TextBox) assetTable.getWidget(selectedAssetRow, 1)).getText());
+							}
+
+						} else if (row < selectedAssetRow) {
+							selectedAssetRow--;
+						}
+					}
+				});
 
 				assetTable.setWidget(row, 0, ecnField);
 				assetTable.setWidget(row, 1, assetField);
 				assetTable.setWidget(row, 2, getModelField(asset));
 				assetTable.setWidget(row, 3, getLocationField(asset));
+				assetTable.setWidget(row, 4, removeRowBtn);
 
 				assetTable.getRowFormatter().addStyleName(row, "selectedRow");
 
@@ -432,7 +458,6 @@ public class TagBuilderPage {
 
 			@Override
 			public void onFailure(Throwable caught) {
-				// TODO Auto-generated method stub
 
 			}
 
@@ -598,6 +623,16 @@ public class TagBuilderPage {
 		});
 	}
 
+	private int getAssetTableRowByAssetName(String assetName) {
+		for (int i = 2; i < assetTable.getRowCount(); i++) {
+			TextBox assetNameField = (TextBox) assetTable.getWidget(i, 1);
+			if (assetNameField.getText().equals(assetName)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
 	private void toggleLimitFields(String inputType, int currentRow, TextBox lowerLimitField, TextBox upperLimitField) {
 		if (inputType.equals("<Select>")) {
 			obsTable.remove(lowerLimitField);
@@ -676,13 +711,7 @@ public class TagBuilderPage {
 		table.getRowFormatter().getElement(row).getStyle().setProperty("cursor", "pointer");
 	}
 
-	private HorizontalPanel getModelField(Asset asset) {
-		final Asset finalAsset;
-		if (asset == null) {
-			finalAsset = new Asset();
-		} else {
-			finalAsset = asset;
-		}
+	private HorizontalPanel getModelField(final Asset asset) {
 		HorizontalPanel horizontalPanel = new HorizontalPanel();
 		horizontalPanel.setWidth("100%");
 		horizontalPanel.setStyleName("removeBorder");
@@ -691,8 +720,8 @@ public class TagBuilderPage {
 		modelItems.getElement().getStyle().setBackgroundColor("white");
 		modelItems.setWidth("100%");
 
-		if (finalAsset.getCategory() != null && !finalAsset.getCategory().isEmpty()) {
-			lookupService.getLookupByCategory(finalAsset.getCategory(), new AsyncCallback<List<Lookup>>() {
+		if (asset.getCategory() != null && !asset.getCategory().isEmpty()) {
+			lookupService.getLookupByCategory(asset.getCategory(), new AsyncCallback<List<Lookup>>() {
 
 				@Override
 				public void onFailure(Throwable caught) {
@@ -704,8 +733,8 @@ public class TagBuilderPage {
 					for (Lookup lookup : lookups) {
 						modelItems.addItem(lookup.getName());
 					}
-					if (finalAsset.getModel() != null) {
-						selectListBoxItem(modelItems, finalAsset.getModel().getName());
+					if (asset.getModel() != null) {
+						selectListBoxItem(modelItems, asset.getModel().getName());
 					}
 				}
 
@@ -798,7 +827,7 @@ public class TagBuilderPage {
 
 											@Override
 											public void onSuccess(Lookup assetType) {
-												finalAsset.setAssettype(assetType);
+												asset.setAssettype(assetType);
 												lookupService.getLookupByName(supplierField.getSelectedValue(),
 														new AsyncCallback<Lookup>() {
 
@@ -810,9 +839,12 @@ public class TagBuilderPage {
 
 															@Override
 															public void onSuccess(Lookup supplier) {
-																finalAsset.setSupplierName(supplier);
+																asset.setSupplierName(supplier);
 																Lookup model = new Lookup();
-																model.setCategoryId(finalAsset.getCategory());
+																if (asset.getCategory() == null) {
+																	asset.setCategory(asset.getName());
+																}
+																model.setCategoryId(asset.getCategory());
 																model.setName(modelField.getValue());
 																lookupService.saveLookup(model,
 																		new AsyncCallback<Void>() {
@@ -829,7 +861,7 @@ public class TagBuilderPage {
 																						.addItem(modelField.getValue());
 																				dialogBox.hide();
 
-																				assetService.updateAsset(finalAsset,
+																				assetService.updateAsset(asset,
 																						new AsyncCallback<Void>() {
 
 																							@Override
@@ -1136,8 +1168,9 @@ public class TagBuilderPage {
 		HorizontalPanel mainPanel = new HorizontalPanel();
 		mainPanel.setWidth("100%");
 
+		mainPanel.getElement().getStyle().setProperty("padding", "20px 20px 0 20px");
+
 		HorizontalPanel hpanel = new HorizontalPanel();
-		hpanel.getElement().getStyle().setProperty("padding", "20px 20px 0 20px");
 
 		Button saveBtn = new Button("Save");
 
@@ -1157,6 +1190,7 @@ public class TagBuilderPage {
 		clearBtn.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
+				messageLabel.setText("");
 				resetTable(assetTable);
 				resetTable(obsTable);
 				resetTable(tagTable);
@@ -1165,6 +1199,10 @@ public class TagBuilderPage {
 
 		hpanel.add(saveBtn);
 		hpanel.add(clearBtn);
+
+		messageLabel = new Label();
+		messageLabel.addStyleName("messageLabel");
+		hpanel.add(messageLabel);
 
 		mainPanel.add(hpanel);
 
@@ -1288,6 +1326,7 @@ public class TagBuilderPage {
 			public void onChange(ChangeEvent event) {
 				unitsField.clear();
 				unitsField.addItem("<Select>");
+				updateUnitsField(unitsField, measurementField.getSelectedValue(), false, null);
 			}
 
 		});
@@ -1367,8 +1406,8 @@ public class TagBuilderPage {
 		setCursorPointer(obsTable, obsRow);
 	}
 
-	private VerticalPanel buildAssetTable() {
-		VerticalPanel mainPanel = new VerticalPanel();
+	private ScrollPanel buildAssetTable() {
+		ScrollPanel mainPanel = new ScrollPanel();
 		mainPanel.setWidth("100%");
 		mainPanel.setHeight("300px");
 		mainPanel.getElement().getStyle().setBackgroundColor("#D9D9D9");
@@ -1404,7 +1443,7 @@ public class TagBuilderPage {
 
 		assetTable.setText(0, 0, "Asset Master");
 
-		assetTable.getFlexCellFormatter().setColSpan(0, 0, 4);
+		assetTable.getFlexCellFormatter().setColSpan(0, 0, 5);
 		assetTable.getRowFormatter().setStyleName(0, "bg-blue");
 		assetTable.getRowFormatter().getElement(0).getStyle().setProperty("borderBottom", "1px solid black");
 
@@ -1412,6 +1451,7 @@ public class TagBuilderPage {
 		assetTable.setText(1, 1, "Asset name");
 		assetTable.setText(1, 2, "Model#");
 		assetTable.setText(1, 3, "Location");
+		assetTable.setText(1, 4, "");
 
 		assetTable.getRowFormatter().setStyleName(1, "bg-blue");
 		assetTable.getRowFormatter().getElement(1).getStyle().setProperty("cursor", "pointer");
@@ -1423,8 +1463,8 @@ public class TagBuilderPage {
 		return mainPanel;
 	}
 
-	private VerticalPanel buildTagTable() {
-		VerticalPanel mainPanel = new VerticalPanel();
+	private ScrollPanel buildTagTable() {
+		ScrollPanel mainPanel = new ScrollPanel();
 		mainPanel.setWidth("100%");
 		mainPanel.setHeight("300px");
 		mainPanel.getElement().getStyle().setBackgroundColor("#D9D9D9");
@@ -1448,7 +1488,7 @@ public class TagBuilderPage {
 					return;
 				}
 				List<String> tagNames = new ArrayList<>();
-				for(Label label : selectedLabels){
+				for (Label label : selectedTagLabels) {
 					tagNames.add(label.getText());
 					label.removeStyleName("selectedLabel");
 				}
@@ -1461,10 +1501,10 @@ public class TagBuilderPage {
 
 					@Override
 					public void onSuccess(List<Tag> tags) {
-						for(Tag tag: tags){
+						for (Tag tag : tags) {
 							updateTablesFromTagDrop(tag);
 						}
-						selectedLabels.clear();
+						selectedTagLabels.clear();
 					}
 
 				});
@@ -1497,8 +1537,8 @@ public class TagBuilderPage {
 		return mainPanel;
 	}
 
-	private VerticalPanel buildObservationTable() {
-		VerticalPanel mainPanel = new VerticalPanel();
+	private ScrollPanel buildObservationTable() {
+		ScrollPanel mainPanel = new ScrollPanel();
 		mainPanel.setWidth("100%");
 		mainPanel.setHeight("270px");
 		mainPanel.getElement().getStyle().setBackgroundColor("#D9D9D9");
@@ -1570,6 +1610,10 @@ public class TagBuilderPage {
 
 		selectedAsset.setEcn(ecn);
 		selectedAsset.setName(assetName);
+
+		if (selectedAsset.getCategory() == null) {
+			selectedAsset.setCategory(selectedAsset.getName());
+		}
 
 		List<String> lookupNames = new ArrayList<>();
 		lookupNames.add(location);
@@ -1655,10 +1699,12 @@ public class TagBuilderPage {
 
 			@Override
 			public void onFailure(Throwable caught) {
+				messageLabel.setText("Failed!");
 			}
 
 			@Override
 			public void onSuccess(Void result) {
+				messageLabel.setText("Success!");
 			}
 
 		});

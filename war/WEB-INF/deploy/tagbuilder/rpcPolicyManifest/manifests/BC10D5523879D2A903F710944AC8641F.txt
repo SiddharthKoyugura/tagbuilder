@@ -1,2 +1,0 @@
-serviceClass: com.assetsense.tagbuilder.service.AssetService
-path: C1A07A6ABD3AADE91C34C5EA6C388DB7.gwt.rpc

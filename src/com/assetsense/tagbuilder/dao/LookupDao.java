@@ -20,4 +20,6 @@ public interface LookupDao {
 	List<Lookup> getLookupsByNames(List<String> names);
 	
 	List<Lookup> getLookupByMeasurementName(String measurement);
+	
+	Measurement getMeasurementByUnitId(String unitId);
 }

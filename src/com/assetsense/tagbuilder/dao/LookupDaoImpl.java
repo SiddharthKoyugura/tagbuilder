@@ -208,4 +208,28 @@ public class LookupDaoImpl implements LookupDao {
 		return lookups;
 	}
 
+	@Override
+	public Measurement getMeasurementByUnitId(String unitId) {
+		Transaction tx = null;
+		Session session = sessionFactory.openSession();
+		Measurement measurement = null;
+		try {
+			tx = session.beginTransaction();
+			Query<Measurement> query = (Query<Measurement>) session.createQuery("from Measurement where unitid=:unitid", Measurement.class);
+			query.setParameter("unitid", unitId);
+			if (query.getResultList().size() > 0) {
+				measurement = query.getResultList().get(0);
+			}
+			tx.commit();
+		} catch (HibernateException e) {
+			if (tx != null) {
+				tx.rollback();
+			}
+			e.printStackTrace();
+		} finally {
+			session.close();
+		}
+		return measurement;
+	}
+
 }

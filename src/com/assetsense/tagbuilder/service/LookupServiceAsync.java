@@ -21,4 +21,6 @@ public interface LookupServiceAsync {
 	void getLookupsByNames(List<String> names, AsyncCallback<List<Lookup>> callback);
 	
 	void getLookupByMeasurementName(String measurement, AsyncCallback<List<Lookup>> callback);
+	
+	void getMeasurementByUnitId(String unitId, AsyncCallback<Measurement> callback);
 }

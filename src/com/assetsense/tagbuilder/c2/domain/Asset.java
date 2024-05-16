@@ -13,12 +13,9 @@ public class Asset extends PersistantObject implements Serializable {
 	private String id;
 	private String name;
 	private String ecn;
-	private Lookup model;
+	private Model model;
 	private Lookup location;
-	private Lookup assettype;
-	private Lookup supplierName;
-
-	private String category;
+	private Lookup assetCategory;
 	private List<Asset> childAssets = new ArrayList<>();
 	private List<Observation> observations = new ArrayList<>();
 
@@ -32,6 +29,9 @@ public class Asset extends PersistantObject implements Serializable {
 		super.detach();
 		childAssets = detachList(childAssets);
 		observations = detachList(observations);
+		if (model != null) {
+			model.detach();
+		}
 	}
 
 	public String getId() {
@@ -58,11 +58,11 @@ public class Asset extends PersistantObject implements Serializable {
 		this.ecn = ecn;
 	}
 
-	public Lookup getModel() {
+	public Model getModel() {
 		return model;
 	}
 
-	public void setModel(Lookup model) {
+	public void setModel(Model model) {
 		this.model = model;
 	}
 
@@ -82,12 +82,12 @@ public class Asset extends PersistantObject implements Serializable {
 		this.name = name;
 	}
 
-	public String getCategory() {
-		return category;
+	public Lookup getAssetCategory() {
+		return assetCategory;
 	}
 
-	public void setCategory(String category) {
-		this.category = category;
+	public void setAssetCategory(Lookup assetCategory) {
+		this.assetCategory = assetCategory;
 	}
 
 	public List<Asset> getChildAssets() {
@@ -106,22 +106,6 @@ public class Asset extends PersistantObject implements Serializable {
 		this.observations = observations;
 	}
 
-	public Lookup getAssettype() {
-		return assettype;
-	}
-
-	public void setAssettype(Lookup assettype) {
-		this.assettype = assettype;
-	}
-
-	public Lookup getSupplierName() {
-		return supplierName;
-	}
-
-	public void setSupplierName(Lookup supplierName) {
-		this.supplierName = supplierName;
-	}
-
 	public Boolean getIsCompleted() {
 		return isCompleted;
 	}
@@ -133,9 +117,8 @@ public class Asset extends PersistantObject implements Serializable {
 	@Override
 	public String toString() {
 		return "Asset [id=" + id + ", name=" + name + ", ecn=" + ecn + ", model=" + model + ", location=" + location
-				+ ", assettype=" + assettype + ", supplierName=" + supplierName + ", category=" + category
-				+ ", childAssets=" + childAssets + ", observations=" + observations + ", isCompleted=" + isCompleted
-				+ "]";
+				+ ", assetCategory=" + assetCategory + ", childAssets=" + childAssets + ", observations=" + observations
+				+ ", isCompleted=" + isCompleted + "]";
 	}
 
 }

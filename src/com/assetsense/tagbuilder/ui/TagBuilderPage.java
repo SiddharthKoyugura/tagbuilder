@@ -10,12 +10,15 @@ import java.util.Set;
 import com.assetsense.tagbuilder.c2.domain.Asset;
 import com.assetsense.tagbuilder.c2.domain.Lookup;
 import com.assetsense.tagbuilder.c2.domain.Measurement;
+import com.assetsense.tagbuilder.c2.domain.Model;
 import com.assetsense.tagbuilder.c2.domain.Observation;
 import com.assetsense.tagbuilder.c2.domain.Tag;
 import com.assetsense.tagbuilder.service.AssetService;
 import com.assetsense.tagbuilder.service.AssetServiceAsync;
 import com.assetsense.tagbuilder.service.LookupService;
 import com.assetsense.tagbuilder.service.LookupServiceAsync;
+import com.assetsense.tagbuilder.service.ModelService;
+import com.assetsense.tagbuilder.service.ModelServiceAsync;
 import com.assetsense.tagbuilder.service.TagService;
 import com.assetsense.tagbuilder.service.TagServiceAsync;
 import com.assetsense.tagbuilder.utils.JsUtil;
@@ -63,6 +66,7 @@ public class TagBuilderPage {
 	private final AssetServiceAsync assetService = GWT.create(AssetService.class);
 	private final LookupServiceAsync lookupService = GWT.create(LookupService.class);
 	private final TagServiceAsync tagService = GWT.create(TagService.class);
+	private final ModelServiceAsync modelService = GWT.create(ModelService.class);
 
 	private final JsUtil jsUtil = new JsUtil();
 
@@ -72,9 +76,6 @@ public class TagBuilderPage {
 
 	private Asset selectedAsset = null;
 	private int selectedAssetRow = 0;
-
-	private TextBox supplierNameField;
-	private ListBox supplierField;
 
 	private Set<Label> selectedTagLabels = new HashSet<Label>();
 	private String currentAssetCategory;
@@ -222,16 +223,15 @@ public class TagBuilderPage {
 
 					@Override
 					public void onFailure(Throwable caught) {
-						// TODO Auto-generated method stub
-						
+
 					}
 
 					@Override
 					public void onSuccess(List<Lookup> lookups) {
-						for(Lookup lookup: lookups){
+						for (Lookup lookup : lookups) {
 							lookupMap.put(lookup.getName(), lookup);
 						}
-						
+
 						lookupService.getMeasurements(new AsyncCallback<List<Measurement>>() {
 
 							@Override
@@ -248,16 +248,8 @@ public class TagBuilderPage {
 								mainPanel.add(spanel1);
 								mainPanel.add(searchPanel);
 
-								jsUtil.sendMessageToServer("{\"request\":\"tags\", \"id\":\"\"}", new AsyncCallback<String>() {
-
-									@Override
-									public void onFailure(Throwable caught) {
-
-									}
-
-									@Override
-									public void onSuccess(String result) {
-										tagService.saveTags(getTags(result), new AsyncCallback<List<Tag>>() {
+								jsUtil.sendMessageToServer("{\"request\":\"tags\", \"id\":\"\"}",
+										new AsyncCallback<String>() {
 
 											@Override
 											public void onFailure(Throwable caught) {
@@ -265,52 +257,61 @@ public class TagBuilderPage {
 											}
 
 											@Override
-											public void onSuccess(final List<Tag> tags) {
-												final VerticalPanel vpanel = new VerticalPanel();
-												for (Tag tag : tags) {
-													final Label label = new Label(tag.getName());
-													label.addStyleName("taskLabel");
-													label.getElement().setDraggable("true");
-													label.addClickHandler(new ClickHandler() {
+											public void onSuccess(String result) {
+												tagService.saveTags(getTags(result), new AsyncCallback<List<Tag>>() {
 
-														@Override
-														public void onClick(ClickEvent event) {
-															if (selectedTagLabels.contains(label)) {
-																label.removeStyleName("selectedLabel");
-																selectedTagLabels.remove(label);
-															} else {
-																label.addStyleName("selectedLabel");
-																selectedTagLabels.add(label);
-															}
+													@Override
+													public void onFailure(Throwable caught) {
+
+													}
+
+													@Override
+													public void onSuccess(final List<Tag> tags) {
+														final VerticalPanel vpanel = new VerticalPanel();
+														for (Tag tag : tags) {
+															final Label label = new Label(tag.getName());
+															label.addStyleName("taskLabel");
+															label.getElement().setDraggable("true");
+															label.addClickHandler(new ClickHandler() {
+
+																@Override
+																public void onClick(ClickEvent event) {
+																	if (selectedTagLabels.contains(label)) {
+																		label.removeStyleName("selectedLabel");
+																		selectedTagLabels.remove(label);
+																	} else {
+																		label.addStyleName("selectedLabel");
+																		selectedTagLabels.add(label);
+																	}
+																}
+
+															});
+
+															label.addDragStartHandler(new DragStartHandler() {
+
+																@Override
+																public void onDragStart(DragStartEvent event) {
+																	event.setData("tagName", label.getText());
+																}
+
+															});
+
+															vpanel.add(label);
 														}
+														spanel2.add(vpanel);
 
-													});
+														mainPanel.add(spanel2);
+													}
 
-													label.addDragStartHandler(new DragStartHandler() {
-
-														@Override
-														public void onDragStart(DragStartEvent event) {
-															event.setData("tagName", label.getText());
-														}
-
-													});
-
-													vpanel.add(label);
-												}
-												spanel2.add(vpanel);
-
-												mainPanel.add(spanel2);
+												});
 											}
 
 										});
-									}
-
-								});
 							}
 
 						});
 					}
-					
+
 				});
 			}
 		});
@@ -406,7 +407,8 @@ public class TagBuilderPage {
 				selectedAsset = asset;
 				final int row = getTableLastRow(assetTable);
 
-				if (row != 2 && currentAssetCategory != null && !currentAssetCategory.equals(asset.getCategory())) {
+				if (row != 2 && currentAssetCategory != null
+						&& !currentAssetCategory.equals(asset.getAssetCategory().getName())) {
 					final DialogBox dialogBox = new DialogBox();
 					dialogBox.setSize("100%", "100%");
 					dialogBox.setAnimationEnabled(true);
@@ -550,7 +552,9 @@ public class TagBuilderPage {
 		updateObsAndTagTable(asset.getName());
 
 		selectedAssetRow = row;
-		currentAssetCategory = asset.getCategory();
+		if (asset.getAssetCategory() != null) {
+			currentAssetCategory = asset.getAssetCategory().getName();
+		}
 	}
 
 	private void updateObsAndTagTable(String assetName) {
@@ -595,12 +599,12 @@ public class TagBuilderPage {
 						}
 
 					});
-					
+
 					for (Map.Entry<String, Measurement> entry : measurementMap.entrySet()) {
 						Measurement measurement = entry.getValue();
 						measurementField.addItem(measurement.getName());
 					}
-					
+
 					if (observation.getMeasurement() != null) {
 						selectListBoxItem(measurementField, observation.getMeasurement().getName());
 						updateUnitsField(unitsField, observation.getMeasurement().getName(), true, observation);
@@ -795,25 +799,25 @@ public class TagBuilderPage {
 		modelItems.getElement().getStyle().setBackgroundColor("white");
 		modelItems.setWidth("100%");
 
-		if (asset.getCategory() != null && !asset.getCategory().isEmpty()) {
-			lookupService.getLookupByCategory(asset.getCategory(), new AsyncCallback<List<Lookup>>() {
+		if (asset.getAssetCategory() != null) {
+			modelService.getModelsByAssetCategoryName(asset.getAssetCategory().getName(),
+					new AsyncCallback<List<Model>>() {
 
-				@Override
-				public void onFailure(Throwable caught) {
+						@Override
+						public void onFailure(Throwable caught) {
+						}
 
-				}
+						@Override
+						public void onSuccess(List<Model> models) {
+							for (Model model : models) {
+								modelItems.addItem(model.getName());
+							}
+							if (asset.getModel() != null) {
+								selectListBoxItem(modelItems, asset.getModel().getName());
+							}
+						}
 
-				@Override
-				public void onSuccess(List<Lookup> lookups) {
-					for (Lookup lookup : lookups) {
-						modelItems.addItem(lookup.getName());
-					}
-					if (asset.getModel() != null) {
-						selectListBoxItem(modelItems, asset.getModel().getName());
-					}
-				}
-
-			});
+					});
 		}
 		final Button addButton = new Button("+");
 		addButton.getElement().getStyle().setProperty("cursor", "pointer");
@@ -864,6 +868,18 @@ public class TagBuilderPage {
 				final ListBox assetTypeField = new ListBox();
 				assetTypeField.setStyleName("inputFieldStyle");
 
+				final ListBox assetCategoryListField = new ListBox();
+				assetCategoryListField.setStyleName("inputFieldStyle");
+
+				final TextBox assetCategoryNameField = new TextBox();
+				assetCategoryNameField.setStyleName("inputFieldStyle");
+
+				final ListBox supplierField = new ListBox();
+				supplierField.setStyleName("inputFieldStyle");
+
+				final TextBox supplierNameField = new TextBox();
+				supplierNameField.setStyleName("inputFieldStyle");
+
 				grid.setText(0, 0, "Model #:");
 				grid.setWidget(0, 1, modelField);
 
@@ -879,94 +895,118 @@ public class TagBuilderPage {
 						for (Lookup assetType : assetTypes) {
 							assetTypeField.addItem(assetType.getName());
 						}
-						grid.setText(1, 0, "Asset Type:");
-						grid.setWidget(1, 1, assetTypeField);
 
-						toggleSupplierField(grid, true);
+						grid.setText(1, 0, "Asset Category:");
+						toggleFields(grid, true, 1, assetCategoryListField, assetCategoryNameField, "111");
+
+						grid.setText(2, 0, "Asset Type:");
+						grid.setWidget(2, 1, assetTypeField);
+
+						grid.setText(3, 0, "Supplier Master:");
+						toggleFields(grid, true, 3, supplierField, supplierNameField, "101");
 
 						Button saveBtn = new Button("Save");
-						grid.setWidget(3, 1, saveBtn);
+						grid.setWidget(4, 1, saveBtn);
 
 						saveBtn.addClickHandler(new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent event) {
+								String assetCategory = null;
+								if (assetCategoryNameField.getText().isEmpty()) {
+									assetCategory = assetCategoryListField.getSelectedValue();
+								} else {
+									assetCategory = assetCategoryNameField.getText();
+									final Lookup assetCategoryLookup = new Lookup();
+									assetCategoryLookup.setCategoryId("111");
+									assetCategoryLookup.setName(assetCategory);
 
-								lookupService.getLookupByName(assetTypeField.getSelectedValue(),
-										new AsyncCallback<Lookup>() {
+									lookupService.saveLookup(assetCategoryLookup, new AsyncCallback<Void>() {
 
-											@Override
-											public void onFailure(Throwable caught) {
-												Window.alert("failure1");
+										@Override
+										public void onFailure(Throwable caught) {
+
+										}
+
+										@Override
+										public void onSuccess(Void result) {
+											String supplierName = null;
+											if (supplierNameField.getText().isEmpty()) {
+												supplierName = supplierField.getSelectedValue();
+											} else {
+												supplierName = supplierNameField.getText();
+												final Lookup supplier = new Lookup();
+												supplier.setCategoryId("101");
+												supplier.setName(supplierName);
+
+												lookupService.saveLookup(supplier, new AsyncCallback<Void>() {
+
+													@Override
+													public void onFailure(Throwable caught) {
+
+													}
+
+													@Override
+													public void onSuccess(Void result) {
+														List<String> lookupNames = new ArrayList<>();
+														lookupNames.add(assetCategoryLookup.getName());
+														lookupNames.add(assetTypeField.getSelectedValue());
+														lookupNames.add(supplier.getName());
+
+														saveModel(asset, lookupNames, modelItems, dialogBox,
+																modelField);
+													}
+
+												});
 											}
+										}
 
-											@Override
-											public void onSuccess(Lookup assetType) {
-												asset.setAssettype(assetType);
-												lookupService.getLookupByName(supplierField.getSelectedValue(),
-														new AsyncCallback<Lookup>() {
+									});
+								}
 
-															@Override
-															public void onFailure(Throwable caught) {
-																Window.alert("failure2");
+								String supplierName = null;
+								if (supplierNameField.getText().isEmpty()) {
+									supplierName = supplierField.getSelectedValue();
+								} else {
+									supplierName = supplierNameField.getText();
+									final Lookup supplier = new Lookup();
+									supplier.setCategoryId("101");
+									supplier.setName(supplierName);
 
-															}
+									Window.alert("hello");
 
-															@Override
-															public void onSuccess(Lookup supplier) {
-																asset.setSupplierName(supplier);
-																Lookup model = new Lookup();
-																if (asset.getCategory() == null) {
-																	asset.setCategory(asset.getName());
-																}
-																model.setCategoryId(asset.getCategory());
-																model.setName(modelField.getValue());
-																lookupService.saveLookup(model,
-																		new AsyncCallback<Void>() {
+									final String assetCategoryName = assetCategory;
 
-																			@Override
-																			public void onFailure(Throwable caught) {
-																				Window.alert("failure3");
+									lookupService.saveLookup(supplier, new AsyncCallback<Void>() {
 
-																			}
+										@Override
+										public void onFailure(Throwable caught) {
 
-																			@Override
-																			public void onSuccess(Void result) {
-																				modelItems
-																						.addItem(modelField.getValue());
-																				dialogBox.hide();
+										}
 
-																				assetService.updateAsset(asset,
-																						new AsyncCallback<Void>() {
+										@Override
+										public void onSuccess(Void result) {
+											List<String> lookupNames = new ArrayList<>();
+											lookupNames.add(assetCategoryName);
+											lookupNames.add(assetTypeField.getSelectedValue());
+											lookupNames.add(supplier.getName());
 
-																							@Override
-																							public void onFailure(
-																									Throwable caught) {
+											saveModel(asset, lookupNames, modelItems, dialogBox, modelField);
+										}
 
-																							}
+									});
+								}
 
-																							@Override
-																							public void onSuccess(
-																									Void result) {
+								List<String> lookupNames = new ArrayList<>();
+								lookupNames.add(assetCategory);
+								lookupNames.add(assetTypeField.getSelectedValue());
+								lookupNames.add(supplierName);
 
-																							}
-
-																						});
-																			}
-
-																		});
-
-															}
-
-														});
-
-											}
-
-										});
+								saveModel(asset, lookupNames, modelItems, dialogBox, modelField);
 							}
 
 						});
 
-						grid.getCellFormatter().getElement(3, 1).getStyle().setProperty("textAlign", "right");
+						grid.getCellFormatter().getElement(4, 1).getStyle().setProperty("textAlign", "right");
 
 						vpanel.add(h1panel);
 						vpanel.add(grid);
@@ -1003,6 +1043,62 @@ public class TagBuilderPage {
 		horizontalPanel.setCellWidth(modelItems, "100%");
 
 		return horizontalPanel;
+	}
+
+	private void saveModel(final Asset asset, final List<String> lookupNames, final ListBox modelItems,
+			final DialogBox dialogBox, final TextBox modelField) {
+		lookupService.getLookupsByNames(lookupNames, new AsyncCallback<List<Lookup>>() {
+
+			@Override
+			public void onFailure(Throwable caught) {
+
+			}
+
+			@Override
+			public void onSuccess(List<Lookup> lookups) {
+
+				Model model = new Model();
+				model.setName(modelField.getValue());
+
+				model.setAssetCategory(lookups.get(0));
+				model.setAssetType(lookups.get(1));
+				model.setSupplierName(lookups.get(2));
+
+				asset.setAssetCategory(lookups.get(0));
+
+				modelService.saveModel(model, new AsyncCallback<Model>() {
+
+					@Override
+					public void onFailure(Throwable caught) {
+
+					}
+
+					@Override
+					public void onSuccess(Model model) {
+						modelItems.addItem(modelField.getText());
+						dialogBox.hide();
+
+						asset.setModel(model);
+
+						assetService.updateAsset(asset, new AsyncCallback<Void>() {
+
+							@Override
+							public void onFailure(Throwable caught) {
+
+							}
+
+							@Override
+							public void onSuccess(Void result) {
+								messageLabel.setText("Model saved");
+							}
+
+						});
+					}
+
+				});
+			}
+
+		});
 	}
 
 	private HorizontalPanel getLocationField(final Asset asset) {
@@ -1159,24 +1255,24 @@ public class TagBuilderPage {
 		return horizontalPanel;
 	}
 
-	private void toggleSupplierField(final Grid grid, Boolean isBegin) {
+	private void toggleFields(final Grid grid, Boolean isBegin, final int row, final ListBox listField,
+			final TextBox textField, final String lookupCategory) {
 		if (isBegin) {
-			supplierField = new ListBox();
-			supplierField.setStyleName("inputFieldStyle");
+			textField.setText("");
+			final Button addBtn = new Button("+");
 
-			final Button addSupplierBtn = new Button("+");
-
-			addSupplierBtn.addClickHandler(new ClickHandler() {
+			addBtn.addClickHandler(new ClickHandler() {
 
 				@Override
 				public void onClick(ClickEvent event) {
-					toggleSupplierField(grid, false);
+					toggleFields(grid, false, row, listField, textField, lookupCategory);
 				}
 
 			});
-			addSupplierBtn.getElement().getStyle().setMarginLeft(5, Unit.PX);
 
-			lookupService.getLookupByCategory("101", new AsyncCallback<List<Lookup>>() {
+			addBtn.getElement().getStyle().setMarginLeft(5, Unit.PX);
+
+			lookupService.getLookupByCategory(lookupCategory, new AsyncCallback<List<Lookup>>() {
 
 				@Override
 				public void onFailure(Throwable caught) {
@@ -1184,37 +1280,31 @@ public class TagBuilderPage {
 				}
 
 				@Override
-				public void onSuccess(List<Lookup> suppliers) {
-					for (Lookup supplier : suppliers) {
-						supplierField.addItem(supplier.getName());
+				public void onSuccess(List<Lookup> lookups) {
+					for (Lookup lookup : lookups) {
+						listField.addItem(lookup.getName());
 					}
 
-					grid.setText(2, 0, "Supplier Master:");
-					grid.setWidget(2, 1, supplierField);
-					grid.setWidget(2, 2, addSupplierBtn);
+					grid.setWidget(row, 1, listField);
+					grid.setWidget(row, 2, addBtn);
 				}
 
 			});
-
 		} else {
-			supplierNameField = new TextBox();
-			supplierNameField.setStyleName("inputFieldStyle");
-
 			Button backBtn = new Button("X");
 			backBtn.addClickHandler(new ClickHandler() {
 
 				@Override
 				public void onClick(ClickEvent event) {
-					toggleSupplierField(grid, true);
+					toggleFields(grid, true, row, listField, textField, lookupCategory);
 				}
 
 			});
 
 			backBtn.getElement().getStyle().setMarginLeft(5, Unit.PX);
 
-			grid.setText(2, 0, "Supplier Name:");
-			grid.setWidget(2, 1, supplierNameField);
-			grid.setWidget(2, 2, backBtn);
+			grid.setWidget(row, 1, textField);
+			grid.setWidget(row, 2, backBtn);
 		}
 	}
 
@@ -1685,7 +1775,8 @@ public class TagBuilderPage {
 
 		String ecn = ((TextBox) assetTable.getWidget(row, 0)).getText();
 		String assetName = ((TextBox) assetTable.getWidget(row, 1)).getText();
-		String modelName = ((ListBox) ((HorizontalPanel) assetTable.getWidget(row, 2)).getWidget(0)).getSelectedValue();
+		final String modelName = ((ListBox) ((HorizontalPanel) assetTable.getWidget(row, 2)).getWidget(0))
+				.getSelectedValue();
 		String location = ((ListBox) ((HorizontalPanel) assetTable.getWidget(row, 3)).getWidget(0)).getSelectedValue();
 
 		ecn = ecn.length() > 0 ? ecn : null;
@@ -1694,83 +1785,91 @@ public class TagBuilderPage {
 		selectedAsset.setEcn(ecn);
 		selectedAsset.setName(assetName);
 
-		if (selectedAsset.getCategory() == null) {
-			selectedAsset.setCategory(selectedAsset.getName());
-		}
-
-		List<String> lookupNames = new ArrayList<>();
-		lookupNames.add(location);
-		lookupNames.add(modelName);
-
-		lookupService.getLookupsByNames(lookupNames, new AsyncCallback<List<Lookup>>() {
+		lookupService.getLookupByName(location, new AsyncCallback<Lookup>() {
 
 			@Override
 			public void onFailure(Throwable caught) {
 			}
 
 			@Override
-			public void onSuccess(List<Lookup> lookups) {
-				if (lookups.size() > 1) {
-					selectedAsset.setLocation(lookups.get(0));
-					selectedAsset.setModel(lookups.get(1));
-				}
+			public void onSuccess(Lookup lookup) {
+				selectedAsset.setLocation(lookup);
 
-				for (int row = 2; row < obsTable.getRowCount(); row++) {
-					String code = ((TextBox) obsTable.getWidget(row, 0)).getText();
-					String description = ((TextBox) obsTable.getWidget(row, 1)).getText();
-					final String inputType = ((ListBox) obsTable.getWidget(row, 2)).getSelectedValue();
-					final String measurement = ((ListBox) obsTable.getWidget(row, 3)).getSelectedValue();
-					final String units = ((ListBox) obsTable.getWidget(row, 4)).getSelectedValue();
+				modelService.getModelByName(modelName, new AsyncCallback<Model>() {
 
-					TextBox lowerLimitField = (TextBox) obsTable.getWidget(row, 5);
-					TextBox upperLimitField = (TextBox) obsTable.getWidget(row, 6);
-					final String lowerLimitString = lowerLimitField != null ? lowerLimitField.getText() : "";
-					final String upperLimitString = upperLimitField != null ? upperLimitField.getText() : "";
+					@Override
+					public void onFailure(Throwable caught) {
 
-					code = code.length() > 0 ? code : null;
+					}
 
-					final Observation observation = selectedAsset.getObservations().get(row - 2);
-					observation.setCode(code);
-					observation.setDescription(description);
-					final Double lowerLimit = lowerLimitString.isEmpty() ? null : Double.parseDouble(lowerLimitString);
-					final Double upperLimit = upperLimitString.isEmpty() ? null : Double.parseDouble(upperLimitString);
-					observation.setLowerLimit(lowerLimit);
-					observation.setUpperLimit(upperLimit);
+					@Override
+					public void onSuccess(Model model) {
+						selectedAsset.setModel(model);
+						selectedAsset.setAssetCategory(model.getAssetCategory());
 
-					String tag = ((TextBox) tagTable.getWidget(row, 2)).getText();
+						for (int row = 2; row < obsTable.getRowCount(); row++) {
+							String code = ((TextBox) obsTable.getWidget(row, 0)).getText();
+							String description = ((TextBox) obsTable.getWidget(row, 1)).getText();
+							final String inputType = ((ListBox) obsTable.getWidget(row, 2)).getSelectedValue();
+							final String measurement = ((ListBox) obsTable.getWidget(row, 3)).getSelectedValue();
+							final String units = ((ListBox) obsTable.getWidget(row, 4)).getSelectedValue();
 
-					observation.getTag().setName(tag);
+							TextBox lowerLimitField = (TextBox) obsTable.getWidget(row, 5);
+							TextBox upperLimitField = (TextBox) obsTable.getWidget(row, 6);
+							final String lowerLimitString = lowerLimitField != null ? lowerLimitField.getText() : "";
+							final String upperLimitString = upperLimitField != null ? upperLimitField.getText() : "";
 
-					lookupService.getLookupByName(inputType, new AsyncCallback<Lookup>() {
+							code = code.length() > 0 ? code : null;
 
-						@Override
-						public void onFailure(Throwable caught) {
+							final Observation observation = selectedAsset.getObservations().get(row - 2);
+							observation.setCode(code);
+							observation.setDescription(description);
+							final Double lowerLimit = lowerLimitString.isEmpty() ? null
+									: Double.parseDouble(lowerLimitString);
+							final Double upperLimit = upperLimitString.isEmpty() ? null
+									: Double.parseDouble(upperLimitString);
+							observation.setLowerLimit(lowerLimit);
+							observation.setUpperLimit(upperLimit);
 
+							String tag = ((TextBox) tagTable.getWidget(row, 2)).getText();
+
+							observation.getTag().setName(tag);
+
+							lookupService.getLookupByName(inputType, new AsyncCallback<Lookup>() {
+
+								@Override
+								public void onFailure(Throwable caught) {
+
+								}
+
+								@Override
+								public void onSuccess(Lookup inputTypeLookup) {
+									observation.setInputType(inputTypeLookup);
+									if (!measurement.equals("<Select>")) {
+										observation.setMeasurement(measurementMap.get(measurement));
+										lookupService.getLookupByName(units, new AsyncCallback<Lookup>() {
+
+											@Override
+											public void onFailure(Throwable caught) {
+
+											}
+
+											@Override
+											public void onSuccess(Lookup unit) {
+												observation.setUnitid(unit);
+											}
+										});
+									}
+								}
+
+							});
 						}
 
-						@Override
-						public void onSuccess(Lookup inputTypeLookup) {
-							observation.setInputType(inputTypeLookup);
-							if (!measurement.equals("<Select>")) {
-								observation.setMeasurement(measurementMap.get(measurement));
-								lookupService.getLookupByName(units, new AsyncCallback<Lookup>() {
+						updateAsset(selectedAsset);
+					}
 
-									@Override
-									public void onFailure(Throwable caught) {
+				});
 
-									}
-
-									@Override
-									public void onSuccess(Lookup unit) {
-										observation.setUnitid(unit);
-									}
-								});
-							}
-						}
-
-					});
-				}
-				updateAsset(selectedAsset);
 			}
 
 		});
@@ -1845,11 +1944,12 @@ public class TagBuilderPage {
 			Asset asset = new Asset();
 			String name = jsUtil.getValueAsString(assetObject, "Name");
 			String id = jsUtil.getValueAsString(assetObject, "ID");
-			String category = jsUtil.getValueAsString(assetObject, "Template");
+			// String category = jsUtil.getValueAsString(assetObject,
+			// "Template");
 
 			asset.setId(id);
 			asset.setName(name);
-			asset.setCategory(category);
+			// asset.setCategory(category);
 
 			List<Observation> observations = new ArrayList<>();
 
@@ -1894,15 +1994,14 @@ public class TagBuilderPage {
 				}
 				tag.setAsset(asset);
 				tag.setObservation(observation);
-				
-				
-				if(lookupMap.containsKey(units)){
+
+				if (lookupMap.containsKey(units)) {
 					observation.setUnitid(lookupMap.get(units));
-					if(measurementMap.containsKey(measurement)){
+					if (measurementMap.containsKey(measurement)) {
 						observation.setMeasurement(measurementMap.get(measurement));
 					}
 				}
-				
+
 				observation.setTag(tag);
 				observations.add(observation);
 

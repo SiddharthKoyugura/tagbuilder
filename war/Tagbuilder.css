@@ -148,3 +148,11 @@ select {
     margin: 0 !important;
     padding: 0 !important;
 }
+
+.messageLabel{
+	margin-left: 50px;
+	color: blue;
+	font-Weight: bold;
+	border-radius: 5px;
+	width: fit-content;
+}

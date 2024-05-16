@@ -14,5 +14,7 @@ public interface TagDao {
 	
 	public Tag getTagByName(String tagName);
 	
+	public List<Tag> getTagsByNames(List<String> names);
+	
 	public List<Tag> getTagsByNameSubString(String nameSubString);
 }

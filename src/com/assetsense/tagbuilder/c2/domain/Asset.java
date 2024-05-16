@@ -26,7 +26,7 @@ public class Asset extends PersistantObject implements Serializable {
 
 	public Asset() {
 	}
-	
+
 	@Override
 	public void detach() {
 		super.detach();
@@ -128,6 +128,14 @@ public class Asset extends PersistantObject implements Serializable {
 
 	public void setIsCompleted(Boolean isCompleted) {
 		this.isCompleted = isCompleted;
+	}
+
+	@Override
+	public String toString() {
+		return "Asset [id=" + id + ", name=" + name + ", ecn=" + ecn + ", model=" + model + ", location=" + location
+				+ ", assettype=" + assettype + ", supplierName=" + supplierName + ", category=" + category
+				+ ", childAssets=" + childAssets + ", observations=" + observations + ", isCompleted=" + isCompleted
+				+ "]";
 	}
 
 }

@@ -43,9 +43,9 @@ public class LookupServiceImpl  extends RemoteServiceServlet implements LookupSe
 	}
 
 	@Override
-	public void saveLookup(Lookup lookup) {
+	public Lookup saveLookup(Lookup lookup) {
 		lookupDao = (LookupDao) ApplicationContextListener.applicationContext.getBean("lookupDaoImpl");
-		lookupDao.saveLookup(lookup);
+		return lookupDao.saveLookup(lookup);
 	}
 
 	@Override

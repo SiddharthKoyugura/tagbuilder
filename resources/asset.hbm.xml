@@ -13,7 +13,7 @@
 		<property name="isCompleted" column="is_completed" not-null="true" type="boolean"></property>
 		
 		<many-to-one name="location" column="location" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false" />
-		<many-to-one name="assetCategory" column="asset_category" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false" />
+		<many-to-one name="assetCategory" column="asset_category" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false"/>
 		<many-to-one name="model" column="model" class="com.assetsense.tagbuilder.c2.domain.Model" not-null="false" fetch="select" lazy="false" />
 		
 		<list name="childAssets" cascade="all" lazy="false">

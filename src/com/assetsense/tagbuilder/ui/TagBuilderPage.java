@@ -407,8 +407,8 @@ public class TagBuilderPage {
 				selectedAsset = asset;
 				final int row = getTableLastRow(assetTable);
 
-				if (row != 2 && currentAssetCategory != null
-						&& !currentAssetCategory.equals(asset.getAssetCategory().getName())) {
+				if (row != 2 && (asset.getAssetCategory() == null || (currentAssetCategory != null
+						&& !currentAssetCategory.equals(asset.getAssetCategory().getName())))) {
 					final DialogBox dialogBox = new DialogBox();
 					dialogBox.setSize("100%", "100%");
 					dialogBox.setAnimationEnabled(true);
@@ -823,6 +823,7 @@ public class TagBuilderPage {
 		addButton.getElement().getStyle().setProperty("cursor", "pointer");
 
 		addButton.addClickHandler(new ClickHandler() {
+
 			@Override
 			public void onClick(ClickEvent event) {
 				// showDialogBox();
@@ -897,13 +898,13 @@ public class TagBuilderPage {
 						}
 
 						grid.setText(1, 0, "Asset Category:");
-						toggleFields(grid, true, 1, assetCategoryListField, assetCategoryNameField, "111");
+						toggleFields(grid, true, 1, assetCategoryListField, assetCategoryNameField, "111", asset);
 
 						grid.setText(2, 0, "Asset Type:");
 						grid.setWidget(2, 1, assetTypeField);
 
 						grid.setText(3, 0, "Supplier Master:");
-						toggleFields(grid, true, 3, supplierField, supplierNameField, "101");
+						toggleFields(grid, true, 3, supplierField, supplierNameField, "101", asset);
 
 						Button saveBtn = new Button("Save");
 						grid.setWidget(4, 1, saveBtn);
@@ -920,7 +921,7 @@ public class TagBuilderPage {
 									assetCategoryLookup.setCategoryId("111");
 									assetCategoryLookup.setName(assetCategory);
 
-									lookupService.saveLookup(assetCategoryLookup, new AsyncCallback<Void>() {
+									lookupService.saveLookup(assetCategoryLookup, new AsyncCallback<Lookup>() {
 
 										@Override
 										public void onFailure(Throwable caught) {
@@ -928,7 +929,7 @@ public class TagBuilderPage {
 										}
 
 										@Override
-										public void onSuccess(Void result) {
+										public void onSuccess(Lookup result) {
 											String supplierName = null;
 											if (supplierNameField.getText().isEmpty()) {
 												supplierName = supplierField.getSelectedValue();
@@ -938,7 +939,7 @@ public class TagBuilderPage {
 												supplier.setCategoryId("101");
 												supplier.setName(supplierName);
 
-												lookupService.saveLookup(supplier, new AsyncCallback<Void>() {
+												lookupService.saveLookup(supplier, new AsyncCallback<Lookup>() {
 
 													@Override
 													public void onFailure(Throwable caught) {
@@ -946,7 +947,7 @@ public class TagBuilderPage {
 													}
 
 													@Override
-													public void onSuccess(Void result) {
+													public void onSuccess(Lookup result) {
 														List<String> lookupNames = new ArrayList<>();
 														lookupNames.add(assetCategoryLookup.getName());
 														lookupNames.add(assetTypeField.getSelectedValue());
@@ -972,11 +973,9 @@ public class TagBuilderPage {
 									supplier.setCategoryId("101");
 									supplier.setName(supplierName);
 
-									Window.alert("hello");
-
 									final String assetCategoryName = assetCategory;
 
-									lookupService.saveLookup(supplier, new AsyncCallback<Void>() {
+									lookupService.saveLookup(supplier, new AsyncCallback<Lookup>() {
 
 										@Override
 										public void onFailure(Throwable caught) {
@@ -984,7 +983,7 @@ public class TagBuilderPage {
 										}
 
 										@Override
-										public void onSuccess(Void result) {
+										public void onSuccess(Lookup result) {
 											List<String> lookupNames = new ArrayList<>();
 											lookupNames.add(assetCategoryName);
 											lookupNames.add(assetTypeField.getSelectedValue());
@@ -1202,7 +1201,7 @@ public class TagBuilderPage {
 						lookup.setCategoryId("location");
 						lookup.setName(location);
 
-						lookupService.saveLookup(lookup, new AsyncCallback<Void>() {
+						lookupService.saveLookup(lookup, new AsyncCallback<Lookup>() {
 
 							@Override
 							public void onFailure(Throwable caught) {
@@ -1210,7 +1209,7 @@ public class TagBuilderPage {
 							}
 
 							@Override
-							public void onSuccess(Void result) {
+							public void onSuccess(Lookup result) {
 								locationField.addItem(location);
 								dialogBox.hide();
 							}
@@ -1256,7 +1255,7 @@ public class TagBuilderPage {
 	}
 
 	private void toggleFields(final Grid grid, Boolean isBegin, final int row, final ListBox listField,
-			final TextBox textField, final String lookupCategory) {
+			final TextBox textField, final String lookupCategory, final Asset asset) {
 		if (isBegin) {
 			textField.setText("");
 			final Button addBtn = new Button("+");
@@ -1265,7 +1264,7 @@ public class TagBuilderPage {
 
 				@Override
 				public void onClick(ClickEvent event) {
-					toggleFields(grid, false, row, listField, textField, lookupCategory);
+					toggleFields(grid, false, row, listField, textField, lookupCategory, asset);
 				}
 
 			});
@@ -1287,6 +1286,10 @@ public class TagBuilderPage {
 
 					grid.setWidget(row, 1, listField);
 					grid.setWidget(row, 2, addBtn);
+
+					if (row == 1 && asset.getAssetCategory() != null) {
+						selectListBoxItem(listField, asset.getAssetCategory().getName());
+					}
 				}
 
 			});
@@ -1296,7 +1299,7 @@ public class TagBuilderPage {
 
 				@Override
 				public void onClick(ClickEvent event) {
-					toggleFields(grid, true, row, listField, textField, lookupCategory);
+					toggleFields(grid, true, row, listField, textField, lookupCategory, asset);
 				}
 
 			});
@@ -1937,21 +1940,27 @@ public class TagBuilderPage {
 	}
 
 	private List<Asset> getAssetHierrarchy(JavaScriptObject assetArray) {
-		List<Asset> assets = new ArrayList<>();
+		final List<Asset> assets = new ArrayList<>();
 		for (int i = 0; i < jsUtil.getArrayLength(assetArray); i++) {
-			JavaScriptObject assetObject = jsUtil.getArrayElement(assetArray, i);
+			final JavaScriptObject assetObject = jsUtil.getArrayElement(assetArray, i);
 
-			Asset asset = new Asset();
+			final Asset asset = new Asset();
 			String name = jsUtil.getValueAsString(assetObject, "Name");
 			String id = jsUtil.getValueAsString(assetObject, "ID");
-			// String category = jsUtil.getValueAsString(assetObject,
-			// "Template");
+			String category = jsUtil.getValueAsString(assetObject, "Template");
 
 			asset.setId(id);
 			asset.setName(name);
 			// asset.setCategory(category);
 
-			List<Observation> observations = new ArrayList<>();
+			Lookup assetCategory = new Lookup();
+			assetCategory.setCategoryId("111");
+			assetCategory.setName(category);
+
+			if (category != null && !category.isEmpty()) {
+				asset.setAssetCategory(assetCategory);
+			}
+			final List<Observation> observations = new ArrayList<>();
 
 			JavaScriptObject observationArray = jsUtil.getObjectProperty(assetObject, "Attributes");
 
@@ -2004,18 +2013,17 @@ public class TagBuilderPage {
 
 				observation.setTag(tag);
 				observations.add(observation);
-
 			}
-			asset.setObservations(observations);
 
+			asset.setObservations(observations);
 			JavaScriptObject childAssetsArray = jsUtil.getObjectProperty(assetObject, "Elements");
 			if (childAssetsArray != null && jsUtil.isArray(childAssetsArray)) {
 				List<Asset> childAssets = getAssetHierrarchy(childAssetsArray);
 				asset.setChildAssets(childAssets);
 			}
-
 			assets.add(asset);
 		}
+
 		return assets;
 	}
 

@@ -13,6 +13,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import com.assetsense.tagbuilder.c2.domain.Asset;
+import com.assetsense.tagbuilder.c2.domain.Lookup;
 
 public class AssetDaoImpl implements AssetDao {
 
@@ -34,7 +35,7 @@ public class AssetDaoImpl implements AssetDao {
 		try {
 			tx = session.beginTransaction();
 			Logger.info("transactionbegin");
-			if(asset.getId() == null){
+			if (asset.getId() == null) {
 				asset.setId(UUID.randomUUID().toString());
 			}
 			if (!isIdUnique(session, asset.getId())) {
@@ -87,12 +88,11 @@ public class AssetDaoImpl implements AssetDao {
 			for (Asset asset : assets) {
 				try {
 					if (isIdUnique(session, asset.getId())) {
+						childUpdate(session, asset);
 						session.save(asset);
 					}
 				} catch (Exception e) {
-					if (tx != null) {
-						tx.rollback();
-					}
+					Logger.error("Error in transaction: " + e.getMessage());
 				}
 			}
 			tx.commit();
@@ -140,6 +140,31 @@ public class AssetDaoImpl implements AssetDao {
 		query.setParameter("id", id);
 		Long count = query.uniqueResult();
 		return count == 0; // ID is unique if count is 0
+	}
+
+	private boolean isLookupNameUnique(Session session, String lookupName) {
+		Query<Long> query = session.createQuery("select count(*) from Lookup where name = :lookupName", Long.class);
+		query.setParameter("lookupName", lookupName);
+		Long count = query.uniqueResult();
+		return count == 0; // ID is unique if count is 0
+	}
+
+	private void childUpdate(Session session, Asset asset) {
+		if (asset.getAssetCategory() != null && asset.getAssetCategory().getId() == null) {
+			if (isLookupNameUnique(session, asset.getAssetCategory().getName())) {
+				session.save(asset.getAssetCategory());
+			}
+			Query<Lookup> query = (Query<Lookup>) session.createQuery("from Lookup where name=:name", Lookup.class);
+			query.setParameter("name", asset.getAssetCategory().getName());
+			if (query.getResultList().size() > 0) {
+				Lookup lookupInDb = query.getResultList().get(0);
+				asset.setAssetCategory(lookupInDb);
+			}
+		}
+
+		for (Asset childAsset : asset.getChildAssets()) {
+			childUpdate(session, childAsset);
+		}
 	}
 
 	@Override

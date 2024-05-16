@@ -10,6 +10,6 @@
 		</id>
 
 		<property name="categoryId" column="category_id" not-null="false" type="string"></property>
-		<property name="name" column="name" not-null="false" type="string"></property>
+		<property name="name" column="name" not-null="false" type="string" unique="true"></property>
 	</class>
 </hibernate-mapping>

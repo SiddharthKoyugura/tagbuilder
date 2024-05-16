@@ -13,7 +13,7 @@ public interface LookupDao {
 
 	List<Measurement> getMeasurements();
 
-	void saveLookup(Lookup lookup);
+	Lookup saveLookup(Lookup lookup);
 	
 	Lookup getLookupByName(String name);
 	

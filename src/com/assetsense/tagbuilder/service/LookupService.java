@@ -16,7 +16,7 @@ public interface LookupService extends RemoteService{
 	
 	public List<Measurement> getMeasurements() throws IllegalArgumentException;
 	
-	public void saveLookup(Lookup lookup);
+	public Lookup saveLookup(Lookup lookup);
 	
 	public Lookup getLookupByName(String name);
 	

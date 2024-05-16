@@ -105,13 +105,26 @@ public class LookupDaoImpl implements LookupDao {
 	}
 
 	@Override
-	public void saveLookup(Lookup lookup) {
+	public Lookup saveLookup(Lookup lookup) {
+		if(lookup == null){
+			return null;
+		}
 		Transaction tx = null;
 		Session session = sessionFactory.openSession();
+		Lookup lookupInDb = null;
 		try {
 			tx = session.beginTransaction();
 			Logger.info("transactionbegin");
-			session.save(lookup);
+
+			if (isLookupNameUnique(session, lookup.getName())) {
+				session.save(lookup);
+			}
+			Query<Lookup> query = (Query<Lookup>) session.createQuery("from Lookup where name=:name", Lookup.class);
+			query.setParameter("name", lookup.getName());
+			if (query.getResultList().size() > 0) {
+				lookupInDb = query.getResultList().get(0);
+			}
+
 			tx.commit();
 			Logger.info("transcation completed");
 		} catch (HibernateException e) {
@@ -123,6 +136,14 @@ public class LookupDaoImpl implements LookupDao {
 			session.close();
 		}
 		Logger.info("end of save Asset");
+		return lookupInDb;
+	}
+
+	private boolean isLookupNameUnique(Session session, String lookupName) {
+		Query<Long> query = session.createQuery("select count(*) from Lookup where name = :lookupName", Long.class);
+		query.setParameter("lookupName", lookupName);
+		Long count = query.uniqueResult();
+		return count == 0; // ID is unique if count is 0
 	}
 
 	@Override
@@ -191,7 +212,7 @@ public class LookupDaoImpl implements LookupDao {
 					if (query.getResultList().size() > 0) {
 						Lookup lookup = query.getResultList().get(0);
 						lookups.add(lookup);
-					}else{
+					} else {
 						lookups.add(null);
 					}
 				}
@@ -215,7 +236,8 @@ public class LookupDaoImpl implements LookupDao {
 		Measurement measurement = null;
 		try {
 			tx = session.beginTransaction();
-			Query<Measurement> query = (Query<Measurement>) session.createQuery("from Measurement where unitid=:unitid", Measurement.class);
+			Query<Measurement> query = (Query<Measurement>) session.createQuery("from Measurement where unitid=:unitid",
+					Measurement.class);
 			query.setParameter("unitid", unitId);
 			if (query.getResultList().size() > 0) {
 				measurement = query.getResultList().get(0);

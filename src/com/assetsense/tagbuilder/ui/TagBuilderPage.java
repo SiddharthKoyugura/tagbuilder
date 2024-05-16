@@ -595,14 +595,15 @@ public class TagBuilderPage {
 						}
 
 					});
-
+					
 					for (Map.Entry<String, Measurement> entry : measurementMap.entrySet()) {
 						Measurement measurement = entry.getValue();
 						measurementField.addItem(measurement.getName());
-						if (observation.getMeasurement() != null) {
-							selectListBoxItem(measurementField, observation.getMeasurement().getName());
-							updateUnitsField(unitsField, observation.getMeasurement().getName(), true, observation);
-						}
+					}
+					
+					if (observation.getMeasurement() != null) {
+						selectListBoxItem(measurementField, observation.getMeasurement().getName());
+						updateUnitsField(unitsField, observation.getMeasurement().getName(), true, observation);
 					}
 
 					String description = observation.getDescription();

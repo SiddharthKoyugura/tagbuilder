@@ -11,7 +11,6 @@ public class Tag extends PersistantObject implements Serializable {
 	private String name;
 	private Asset asset;
 	private Observation observation;
-	private Lookup category;
 
 	public Tag() {
 	}
@@ -46,14 +45,6 @@ public class Tag extends PersistantObject implements Serializable {
 
 	public void setObservation(Observation observation) {
 		this.observation = observation;
-	}
-
-	public Lookup getCategory() {
-		return category;
-	}
-
-	public void setCategory(Lookup category) {
-		this.category = category;
 	}
 
 }

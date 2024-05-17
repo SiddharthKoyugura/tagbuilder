@@ -11,7 +11,6 @@
 
 		<property name="name" column="name" not-null="false" unique="true"></property>
 		<many-to-one name="asset" column="asset" class="com.assetsense.tagbuilder.c2.domain.Asset" not-null="false" fetch="select" lazy="false" />
-		<one-to-one name="observation" class="com.assetsense.tagbuilder.c2.domain.Observation" cascade="all" />
-		<many-to-one name="category" column="category" class="com.assetsense.tagbuilder.c2.domain.Lookup" not-null="false" fetch="select" lazy="false" />
+		<one-to-one name="observation" class="com.assetsense.tagbuilder.c2.domain.Observation" cascade="all" />	
 	</class>
 </hibernate-mapping>

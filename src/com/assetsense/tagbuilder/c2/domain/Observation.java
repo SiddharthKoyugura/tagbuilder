@@ -12,7 +12,6 @@ public class Observation extends PersistantObject implements Serializable {
 	private String code;
 	private Lookup inputType;
 	private String description;
-	private Lookup category;
 	private Measurement measurement;
 	private Lookup unitid;
 	private Tag tag;
@@ -45,14 +44,6 @@ public class Observation extends PersistantObject implements Serializable {
 
 	public String getDescription() {
 		return description;
-	}
-
-	public Lookup getCategory() {
-		return category;
-	}
-
-	public void setCategory(Lookup category) {
-		this.category = category;
 	}
 
 	public void setDescription(String description) {
@@ -110,8 +101,8 @@ public class Observation extends PersistantObject implements Serializable {
 	@Override
 	public String toString() {
 		return "Observation [id=" + id + ", code=" + code + ", inputType=" + inputType + ", description=" + description
-				+ ", category=" + category + ", measurement=" + measurement + ", unitid=" + unitid + ", tag=" + tag
-				+ "]";
+				+ ", measurement=" + measurement + ", unitid=" + unitid + ", tag=" + tag + ", lowerLimit=" + lowerLimit
+				+ ", upperLimit=" + upperLimit + "]";
 	}
 
 }

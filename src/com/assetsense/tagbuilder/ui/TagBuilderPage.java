@@ -404,95 +404,121 @@ public class TagBuilderPage {
 
 			@Override
 			public void onSuccess(final Asset asset) {
-				selectedAsset = asset;
-				final int row = getTableLastRow(assetTable);
-
-				if (row != 2 && (asset.getAssetCategory() == null || (currentAssetCategory != null
-						&& !currentAssetCategory.equals(asset.getAssetCategory().getName())))) {
-					final DialogBox dialogBox = new DialogBox();
-					dialogBox.setSize("100%", "100%");
-					dialogBox.setAnimationEnabled(true);
-
-					dialogBox.addStyleName("dialogBoxStyle");
-
-					final VerticalPanel vpanel = new VerticalPanel();
-					vpanel.setWidth("100%");
-
-					final HorizontalPanel h1panel = new HorizontalPanel();
-					h1panel.setWidth("100%");
-					h1panel.setHeight("40px");
-					h1panel.getElement().getStyle().setBackgroundColor("#5C9ED4");
-					h1panel.getElement().getStyle().setPadding(5, Unit.PX);
-
-					Button closeBtn = new Button("X");
-
-					closeBtn.addClickHandler(new ClickHandler() {
-
-						@Override
-						public void onClick(ClickEvent event) {
-							dialogBox.hide();
-						}
-
-					});
-
-					h1panel.add(closeBtn);
-
-					h1panel.setCellHorizontalAlignment(closeBtn, HasHorizontalAlignment.ALIGN_RIGHT);
-
-					final Grid grid = new Grid(2, 1);
-					grid.setCellPadding(10);
-					grid.getElement().getStyle().setProperty("padding", "20px");
-					grid.getElement().getStyle().setProperty("borderCollapse", "collapse");
-					grid.setWidth("100%");
-
-					Label label = new Label(
-							"You may lost your changes, would you like to continue saving or abort current changes?");
-					label.getElement().getStyle().setFontWeight(FontWeight.BOLD);
-
-					Button continueBtn = new Button("Continue");
-					Button abortBtn = new Button("Abort");
-
-					abortBtn.addClickHandler(new ClickHandler() {
-
-						@Override
-						public void onClick(ClickEvent event) {
-							dialogBox.hide();
-							resetTable(assetTable);
-							buildAssetFields(asset, row);
-						}
-
-					});
-
-					continueBtn.addClickHandler(new ClickHandler() {
-
-						@Override
-						public void onClick(ClickEvent event) {
-							dialogBox.hide();
-						}
-
-					});
-
-					HorizontalPanel hpanel = new HorizontalPanel();
-					hpanel.add(continueBtn);
-					hpanel.add(abortBtn);
-
-					abortBtn.getElement().getStyle().setMarginLeft(10, Unit.PX);
-
-					grid.setWidget(0, 0, label);
-					grid.setWidget(1, 0, hpanel);
-
-					vpanel.add(h1panel);
-					vpanel.add(grid);
-
-					dialogBox.add(vpanel);
-
-					dialogBox.center();
+				if (isAssetSaved(asset)) {
+					messageLabel.setText(
+							"Warning: This asset has already saved. You can edit this asset in Asset Master");
 				} else {
-					buildAssetFields(asset, row);
+					messageLabel.setText("");
+					selectedAsset = asset;
+					final int row = getTableLastRow(assetTable);
+
+					if (row != 2 && (asset.getAssetCategory() == null || (currentAssetCategory != null
+							&& !currentAssetCategory.equals(asset.getAssetCategory().getName())))) {
+						final DialogBox dialogBox = new DialogBox();
+						dialogBox.setSize("100%", "100%");
+						dialogBox.setAnimationEnabled(true);
+
+						dialogBox.addStyleName("dialogBoxStyle");
+
+						final VerticalPanel vpanel = new VerticalPanel();
+						vpanel.setWidth("100%");
+
+						final HorizontalPanel h1panel = new HorizontalPanel();
+						h1panel.setWidth("100%");
+						h1panel.setHeight("40px");
+						h1panel.getElement().getStyle().setBackgroundColor("#5C9ED4");
+						h1panel.getElement().getStyle().setPadding(5, Unit.PX);
+
+						Button closeBtn = new Button("X");
+
+						closeBtn.addClickHandler(new ClickHandler() {
+
+							@Override
+							public void onClick(ClickEvent event) {
+								dialogBox.hide();
+							}
+
+						});
+
+						h1panel.add(closeBtn);
+
+						h1panel.setCellHorizontalAlignment(closeBtn, HasHorizontalAlignment.ALIGN_RIGHT);
+
+						final Grid grid = new Grid(2, 1);
+						grid.setCellPadding(10);
+						grid.getElement().getStyle().setProperty("padding", "20px");
+						grid.getElement().getStyle().setProperty("borderCollapse", "collapse");
+						grid.setWidth("100%");
+
+						Label label = new Label(
+								"You may lost your changes, would you like to continue saving or abort current changes?");
+						label.getElement().getStyle().setFontWeight(FontWeight.BOLD);
+
+						Button continueBtn = new Button("Continue");
+						Button abortBtn = new Button("Abort");
+
+						abortBtn.addClickHandler(new ClickHandler() {
+
+							@Override
+							public void onClick(ClickEvent event) {
+								dialogBox.hide();
+								resetTable(assetTable);
+								buildAssetFields(asset, row);
+							}
+
+						});
+
+						continueBtn.addClickHandler(new ClickHandler() {
+
+							@Override
+							public void onClick(ClickEvent event) {
+								dialogBox.hide();
+							}
+
+						});
+
+						HorizontalPanel hpanel = new HorizontalPanel();
+						hpanel.add(continueBtn);
+						hpanel.add(abortBtn);
+
+						abortBtn.getElement().getStyle().setMarginLeft(10, Unit.PX);
+
+						grid.setWidget(0, 0, label);
+						grid.setWidget(1, 0, hpanel);
+
+						vpanel.add(h1panel);
+						vpanel.add(grid);
+
+						dialogBox.add(vpanel);
+
+						dialogBox.center();
+					} else {
+						buildAssetFields(asset, row);
+					}
 				}
 			}
 
 		});
+	}
+
+	private Boolean isAssetSaved(Asset asset) {
+		if (asset.getEcn() == null || asset.getName() == null || asset.getModel() == null || asset.getLocation() == null
+				|| asset.getAssetCategory() == null) {
+			return false;
+		}
+		for (Observation observation : asset.getObservations()) {
+			if (observation.getCode() == null || observation.getInputType() == null
+					|| observation.getDescription() == null || observation.getMeasurement() == null
+					|| observation.getUnitid() == null || observation.getLowerLimit() == null
+					|| observation.getUpperLimit() == null || observation.getTag() == null) {
+				return false;
+			}
+			Tag tag = observation.getTag();
+			if (tag.getName() == null || tag.getName().isEmpty()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private void buildAssetFields(Asset asset, int row) {
@@ -935,30 +961,29 @@ public class TagBuilderPage {
 												supplierName = supplierField.getSelectedValue();
 											} else {
 												supplierName = supplierNameField.getText();
-												final Lookup supplier = new Lookup();
-												supplier.setCategoryId("101");
-												supplier.setName(supplierName);
-
-												lookupService.saveLookup(supplier, new AsyncCallback<Lookup>() {
-
-													@Override
-													public void onFailure(Throwable caught) {
-
-													}
-
-													@Override
-													public void onSuccess(Lookup result) {
-														List<String> lookupNames = new ArrayList<>();
-														lookupNames.add(assetCategoryLookup.getName());
-														lookupNames.add(assetTypeField.getSelectedValue());
-														lookupNames.add(supplier.getName());
-
-														saveModel(asset, lookupNames, modelItems, dialogBox,
-																modelField);
-													}
-
-												});
 											}
+											final Lookup supplier = new Lookup();
+											supplier.setCategoryId("101");
+											supplier.setName(supplierName);
+
+											lookupService.saveLookup(supplier, new AsyncCallback<Lookup>() {
+
+												@Override
+												public void onFailure(Throwable caught) {
+
+												}
+
+												@Override
+												public void onSuccess(Lookup result) {
+													List<String> lookupNames = new ArrayList<>();
+													lookupNames.add(assetCategoryLookup.getName());
+													lookupNames.add(assetTypeField.getSelectedValue());
+													lookupNames.add(supplier.getName());
+
+													saveModel(asset, lookupNames, modelItems, dialogBox, modelField);
+												}
+
+											});
 										}
 
 									});
@@ -1393,6 +1418,7 @@ public class TagBuilderPage {
 		if (tag != null) {
 			int assetRow = assetTable.getRowCount();
 			Asset asset = new Asset();
+			tag.setAsset(asset);
 			if (assetRow == 2) {
 				updateAssetTable(assetRow, asset);
 				updateObservationTable();
@@ -1529,7 +1555,6 @@ public class TagBuilderPage {
 		descriptionField.setWidth("98%");
 
 		final ListBox inputTypeField = new ListBox();
-		inputTypeField.addItem("<Select>");
 
 		inputTypeField.getElement().getStyle().setBackgroundColor("white");
 		inputTypeField.getElement().getStyle().setProperty("width", "100%");
@@ -1807,8 +1832,10 @@ public class TagBuilderPage {
 
 					@Override
 					public void onSuccess(Model model) {
-						selectedAsset.setModel(model);
-						selectedAsset.setAssetCategory(model.getAssetCategory());
+						if (model != null) {
+							selectedAsset.setModel(model);
+							selectedAsset.setAssetCategory(model.getAssetCategory());
+						}
 
 						for (int row = 2; row < obsTable.getRowCount(); row++) {
 							String code = ((TextBox) obsTable.getWidget(row, 0)).getText();
@@ -1838,34 +1865,18 @@ public class TagBuilderPage {
 
 							observation.getTag().setName(tag);
 
-							lookupService.getLookupByName(inputType, new AsyncCallback<Lookup>() {
+							if (lookupMap.containsKey(inputType)) {
+								Lookup inputTypeLookup = lookupMap.get(inputType);
 
-								@Override
-								public void onFailure(Throwable caught) {
+								observation.setInputType(inputTypeLookup);
+								if (!measurement.equals("<Select>")) {
+									observation.setMeasurement(measurementMap.get(measurement));
 
-								}
-
-								@Override
-								public void onSuccess(Lookup inputTypeLookup) {
-									observation.setInputType(inputTypeLookup);
-									if (!measurement.equals("<Select>")) {
-										observation.setMeasurement(measurementMap.get(measurement));
-										lookupService.getLookupByName(units, new AsyncCallback<Lookup>() {
-
-											@Override
-											public void onFailure(Throwable caught) {
-
-											}
-
-											@Override
-											public void onSuccess(Lookup unit) {
-												observation.setUnitid(unit);
-											}
-										});
+									if (lookupMap.containsKey(units)) {
+										observation.setUnitid(lookupMap.get(units));
 									}
 								}
-
-							});
+							}
 						}
 
 						updateAsset(selectedAsset);
